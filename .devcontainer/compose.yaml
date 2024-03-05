@@ -1,0 +1,26 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    environment:
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=8080
+      - PRISMAREPOSITORY_DB_URL=postgresql://user:password@localhost:5432/db?schema=public
+    volumes:
+      - devcontainer_data:/workspaces
+    network_mode: service:postgres
+  postgres:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  devcontainer_data:

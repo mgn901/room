@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv05', 'cv08', 'zero', 'tnum';
+    -webkit-tap-highlight-color: transparent;
+    @apply m-0 bg-gray1-0 p-0 font-sans text-gray1-7 dark:bg-gray1-10 dark:text-gray1-3;
+  }
+}
+
+@layer utilities {
+  .font-icon-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'liga';
+    font-variation-settings: 'FILL' 0;
+    overflow: hidden;
+    width: 1em;
+    min-height: 1em;
+    flex-shrink: 0;
+  }
+  .font-icon-filled {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'liga';
+    font-variation-settings: 'FILL' 1;
+    overflow: hidden;
+    width: 1em;
+    min-height: 1em;
+    flex-shrink: 0;
+  }
+}
+
+@layer components {
+}
