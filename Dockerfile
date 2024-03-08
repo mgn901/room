@@ -1,6 +1,6 @@
 # stage: deps
 
-FROM node:21.6.2-slim as deps
+FROM node:21.7.0-slim as deps
 ARG HUSKY=0
 WORKDIR /usr/src/app
 # 1. Install deps needed to run the app
@@ -13,7 +13,7 @@ RUN npm ci --omit=dev --legacy-peer-deps
 
 # stage: builder
 
-FROM node:21.6.2-slim as builder
+FROM node:21.7.0-slim as builder
 ARG HUSKY=0
 WORKDIR /usr/src/app
 # 1. Install dev-dependencies
@@ -37,7 +37,7 @@ RUN npm run prepare\
 
 # stage: runtime
 
-FROM node:21.6.2-slim as runtime
+FROM node:21.7.0-slim as runtime
 WORKDIR /usr/src/app
 # 1. Install dumb-init
 RUN apt-get update\
