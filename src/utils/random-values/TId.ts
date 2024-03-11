@@ -4,8 +4,8 @@ import { TNominalPrimitive } from '../primitives/TNominalPrimitive.ts';
  * エンティティ`E`のID文字列を表す公称プリミティブ型。
  * 16文字の英数字、`-`および`_`から成る。
  */
-const symbol = Symbol();
-export type TId = TNominalPrimitive<string, typeof symbol>;
+const idTypeSymbol = Symbol();
+export type TId = TNominalPrimitive<string, typeof idTypeSymbol>;
 
 /**
  * 文字列がIDになりうるかを判定する関数。

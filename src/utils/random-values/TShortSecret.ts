@@ -4,8 +4,8 @@ import { TNominalPrimitive } from '../primitives/TNominalPrimitive.ts';
  * 短い8文字のシークレット文字列を表す公称プリミティブ型。
  * 8文字の数字および`a`から`f`までの英字から成る。
  */
-const symbol = Symbol();
-export type TShortSecret = TNominalPrimitive<string, typeof symbol>;
+const shortSecretTypeSymbol = Symbol();
+export type TShortSecret = TNominalPrimitive<string, typeof shortSecretTypeSymbol>;
 
 /**
  * 文字列が短いシークレットになりうるかを判定する関数。
@@ -27,7 +27,10 @@ export const isShortSecret = (value: string): value is TShortSecret => {
 export const generateShortSecret = (): TShortSecret => {
   const array = new Uint8Array(4);
   globalThis.crypto.getRandomValues(array);
-  const string = [...array].map((n) => n.toString(16)).join('');
+  const string = [...array]
+    .map((n) => n.toString(16))
+    .join('')
+    .padStart(8, '0');
   if (!isShortSecret(string)) {
     throw new ShortSecretGenerationFailedError('シークレットを生成できません。');
   }
