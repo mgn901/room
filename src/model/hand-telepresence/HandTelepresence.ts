@@ -22,16 +22,15 @@ export class HandTelepresence {
   /** 見られている手札の番号 */
   public readonly lookingAt: number;
 
+  /** 各手札の位置等の状態の一覧。 */
+  public readonly cards: Readonly<CardState[]>;
+
   /** 認証トークン。 */
   private readonly authenticationToken: TLongSecret;
-
-  /** 各手札の位置等の状態の一覧。 */
-  private readonly cards: Readonly<CardState[]>;
 
   //#region コンストラクタ他
   private constructor(
     param: TParameterize<HandTelepresence> & {
-      cards: HandTelepresence['cards'];
       authenticationToken: HandTelepresence['authenticationToken'];
     },
   ) {
@@ -43,7 +42,6 @@ export class HandTelepresence {
 
   public static fromDto(
     param: TParameterize<HandTelepresence> & {
-      cards: HandTelepresence['cards'];
       authenticationToken: HandTelepresence['authenticationToken'];
     },
   ): HandTelepresence {
@@ -52,12 +50,7 @@ export class HandTelepresence {
   //#endregion
 
   /** プレイヤーの手札の様子を表す手札テレプレゼンスのオブジェクトを作成する。 */
-  public static create(
-    param: Pick<TParameterize<HandTelepresence>, 'id'> & {
-      /** 各手札の位置等の状態の一覧。 */
-      readonly cards: HandTelepresence['cards'];
-    },
-  ): Success<{
+  public static create(param: Pick<TParameterize<HandTelepresence>, 'id' | 'cards'>): Success<{
     /** 作成された手札テレプレゼンスのオブジェクト。 */
     sharedHand: HandTelepresence;
   }> {
@@ -87,6 +80,7 @@ export class HandTelepresence {
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) => {
           // 押さえられているかによってずれ具合が変わる。
           const result = card.toPositionSet({
@@ -121,7 +115,7 @@ export class HandTelepresence {
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
-        cards: this.cards,
+        authenticationToken: this.authenticationToken,
         lookingAt: param.index,
       }),
     });
@@ -143,6 +137,7 @@ export class HandTelepresence {
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) =>
           param.indexes.includes(index) ? card.toHolded() : card.toUnholded(),
         ),
@@ -168,6 +163,7 @@ export class HandTelepresence {
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) => {
           const result = card.toDistanceFromInitialPositionSet({
             // 押さえられているかによって持ち上がり具合が変わる。
