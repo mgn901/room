@@ -17,7 +17,7 @@ export const discardPairs = (param: {
   readonly authenticationToken: TLongSecret;
   readonly implementationContainer: IImplementationContainer;
 }): TResult<
-  { game: Game; me: Player },
+  { game: Game; player: Player },
   NotFoundException | IllegalAuthenticationTokenException | RepositoryError
 > => {
   const findMeResult = param.implementationContainer.playerRepository.findById(param.playerId);
@@ -64,7 +64,9 @@ export const discardPairs = (param: {
     context: createGamePlayerContextResult.value.context,
   });
 
-  const saveMeResult = param.implementationContainer.playerRepository.save(discardResult.value.me);
+  const saveMeResult = param.implementationContainer.playerRepository.save(
+    discardResult.value.player,
+  );
   if (saveMeResult instanceof Failure) {
     return saveMeResult;
   }
@@ -74,5 +76,5 @@ export const discardPairs = (param: {
     return saveGameResult;
   }
 
-  return new Success({ game: setResult.value.game, me: discardResult.value.me });
+  return new Success({ game: setResult.value.game, player: discardResult.value.player });
 };

@@ -170,7 +170,7 @@ export class Player {
     readonly context: PlayerContext;
   }): Success<{
     /** 同位の札を捨てた後の自分のオブジェクト。 */
-    me: Player;
+    player: Player;
     /** 捨てられた手札の一覧。 */
     discarded: ICard[];
   }> {
@@ -194,7 +194,7 @@ export class Player {
       }, []);
 
     return new Success({
-      me: new Player({
+      player: new Player({
         ...this,
         authenticationToken: this.authenticationToken,
         cardsInHand: newCardsInHand,
