@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "include": ["./src", "./scripts", "*.config.js", "*.config.cjs"],
+    "include": ["src", "scripts", "*.config.js", "*.config.cjs"],
     "ignore": [".devcontainer", ".husky", ".vscode"]
   },
   "linter": {
