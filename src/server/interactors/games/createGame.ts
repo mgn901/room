@@ -25,9 +25,18 @@ export const createGame = (param: {
     return createGameResult;
   }
 
-  const saveResult = param.implementationContainer.gameRepository.save(createGameResult.value.game);
-  if (saveResult instanceof Failure) {
-    return saveResult;
+  const saveGameResult = param.implementationContainer.gameRepository.save(
+    createGameResult.value.game,
+  );
+  if (saveGameResult instanceof Failure) {
+    return saveGameResult;
+  }
+
+  for (const player of createGameResult.value.game.players) {
+    const savePlayerResult = param.implementationContainer.playerRepository.save(player);
+    if (savePlayerResult instanceof Failure) {
+      return savePlayerResult;
+    }
   }
 
   const deleteResult = param.implementationContainer.waitingRoomRepository.delete(

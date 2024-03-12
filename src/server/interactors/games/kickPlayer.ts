@@ -12,12 +12,12 @@ export const kickPlayer = (param: {
   readonly waitingRoomId: WaitingRoom['id'];
   readonly targetId: IWaitingPlayer['id'];
   readonly ownerAuthenticationToken: TLongSecret;
-  readonly implementationContiner: IImplementationContainer;
+  readonly implementationContainer: IImplementationContainer;
 }): TResult<
   { waitingRoom: WaitingRoom },
   NotFoundException | IllegalAuthenticationTokenException | RepositoryError
 > => {
-  const findResult = param.implementationContiner.waitingRoomRepository.findById(
+  const findResult = param.implementationContainer.waitingRoomRepository.findById(
     param.waitingRoomId,
   );
   if (findResult instanceof Failure) {
@@ -40,7 +40,7 @@ export const kickPlayer = (param: {
     context: createContextResult.value.context,
   });
 
-  const saveResult = param.implementationContiner.waitingRoomRepository.save(
+  const saveResult = param.implementationContainer.waitingRoomRepository.save(
     kickResult.value.waitingRoom,
   );
   if (saveResult instanceof Failure) {
