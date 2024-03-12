@@ -8,7 +8,7 @@ import { MAX_PLAYER_COUNT } from '../constants.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { type PlayerContext } from '../player/PlayerContext.ts';
-import { gameTypeSymbol } from './Game.ts';
+import { type gameTypeSymbol } from './Game.ts';
 import { type IWaitingPlayer, waitingPlayerTypeSymbol } from './IWaitingPlayer.ts';
 import { type WaitingRoomOwnerContext } from './WaitingRoomOwnerContext.ts';
 

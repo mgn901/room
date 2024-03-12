@@ -1,7 +1,7 @@
-import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalAuthenticationTokenException } from '../player/PlayerContext.ts';
-import { HandTelepresence } from './HandTelepresence.ts';
+import { type HandTelepresence } from './HandTelepresence.ts';
 
 export const handTelepresenceContextTypeSymbol = Symbol();
 

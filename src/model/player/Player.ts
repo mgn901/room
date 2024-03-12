@@ -1,17 +1,17 @@
-import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { TLongSecret } from '../../utils/random-values/TLongSecret.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { type TLongSecret } from '../../utils/random-values/TLongSecret.ts';
 import { range } from '../../utils/range/range.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { except } from '../../utils/set-operations/except.ts';
 import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from '../constants.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { IllegalParamException } from '../errors/IllegalParamException.ts';
-import { IWaitingPlayer } from '../game/IWaitingPlayer.ts';
-import { ICard, compareCard } from '../values/ICard.ts';
-import { PlayerContext } from './PlayerContext.ts';
+import { type IWaitingPlayer } from '../game/IWaitingPlayer.ts';
+import { type ICard, compareCard } from '../values/ICard.ts';
+import { type PlayerContext } from './PlayerContext.ts';
 
 export const playerTypeSymbol = Symbol();
 

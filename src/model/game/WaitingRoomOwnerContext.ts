@@ -1,8 +1,8 @@
-import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalAuthenticationTokenException } from '../player/PlayerContext.ts';
-import { IWaitingPlayer } from './IWaitingPlayer.ts';
-import { WaitingRoom } from './WaitingRoom.ts';
+import { type IWaitingPlayer } from './IWaitingPlayer.ts';
+import { type WaitingRoom } from './WaitingRoom.ts';
 
 export const waitingRoomOwnerContextTypeSymbol = Symbol();
 

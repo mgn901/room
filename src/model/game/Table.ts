@@ -1,11 +1,11 @@
-import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
 import { Success } from '../../utils/result/TResult.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
-import { ICard } from '../values/ICard.ts';
-import { gameTypeSymbol } from './Game.ts';
-import { GamePlayerContext } from './GamePlayerContext.ts';
+import { type ICard } from '../values/ICard.ts';
+import { type gameTypeSymbol } from './Game.ts';
+import { type GamePlayerContext } from './GamePlayerContext.ts';
 
 export const tableTypeSymbol = Symbol();
 

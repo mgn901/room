@@ -1,13 +1,13 @@
-import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
-import { IllegalParamException } from '../errors/IllegalParamException.ts';
+import { type IllegalParamException } from '../errors/IllegalParamException.ts';
 import { Player } from '../player/Player.ts';
-import { GamePlayerContext } from './GamePlayerContext.ts';
+import { type GamePlayerContext } from './GamePlayerContext.ts';
 import { Table } from './Table.ts';
-import { WaitingRoom } from './WaitingRoom.ts';
+import { type WaitingRoom } from './WaitingRoom.ts';
 
 export const gameTypeSymbol = Symbol();
 
