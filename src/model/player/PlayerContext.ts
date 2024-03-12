@@ -1,4 +1,4 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { TLongSecret } from '../../utils/random-values/TLongSecret.ts';
 import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
@@ -14,7 +14,7 @@ export class PlayerContext {
   /** このコンテキストオブジェクトでの操作が許可されているプレイヤーのID。 */
   public readonly playerId: Player['id'];
 
-  private constructor(param: Omit<TDtoOf<PlayerContext>, typeof playerContextTypeSymbol>) {
+  private constructor(param: TParameterize<PlayerContext>) {
     this.playerId = param.playerId;
   }
 

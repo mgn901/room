@@ -1,7 +1,7 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { TId } from '../../utils/random-values/TId.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { Success } from '../../utils/result/TResult.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { ICard } from '../values/ICard.ts';
 import { gameTypeSymbol } from './Game.ts';
@@ -20,12 +20,12 @@ export class Table {
   public readonly cards: Readonly<ICard[]>;
 
   //#region コンストラクタ他
-  public constructor(param: Omit<TDtoOf<Table>, typeof tableTypeSymbol>) {
+  public constructor(param: TParameterize<Table>) {
     this.id = param.id;
     this.cards = param.cards;
   }
 
-  public static fromDto(param: Omit<TDtoOf<Table>, typeof tableTypeSymbol>): Table {
+  public static fromDto(param: TParameterize<Table>): Table {
     return new Table(param);
   }
   //#endregion

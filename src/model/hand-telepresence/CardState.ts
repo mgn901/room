@@ -1,4 +1,4 @@
-import { type TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalParamException } from '../errors/IllegalParamException.ts';
 import { type ICard } from '../values/ICard.ts';
@@ -31,7 +31,7 @@ export class CardState {
   public readonly isHolded: boolean;
 
   //#region コンストラクタ他
-  private constructor(param: TDtoOf<CardState>) {
+  private constructor(param: TParameterize<CardState>) {
     this.card = param.card;
     this.x = param.x;
     this.y = param.y;
@@ -39,12 +39,12 @@ export class CardState {
     this.isHolded = param.isHolded;
   }
 
-  public static fromDto(param: TDtoOf<CardState>): CardState {
+  public static fromDto(param: TParameterize<CardState>): CardState {
     return new CardState(param);
   }
   //#endregion
   /** 1枚のカードの状態を表すオブジェクトを作成する。 */
-  public static create(param: Pick<TDtoOf<CardState>, 'card' | 'x' | 'y'>): TResult<
+  public static create(param: Pick<TParameterize<CardState>, 'card' | 'x' | 'y'>): TResult<
     {
       /** 1枚のカードの状態を表すオブジェクト。 */
       cardState: CardState;

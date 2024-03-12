@@ -1,5 +1,5 @@
 import { compare } from '../../utils/compare/compare.ts';
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { TId } from '../../utils/random-values/TId.ts';
 import { TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
@@ -30,7 +30,7 @@ export class HandTelepresence {
 
   //#region コンストラクタ他
   private constructor(
-    param: Omit<TDtoOf<HandTelepresence>, typeof handTelepresenceTypeSymbol> & {
+    param: TParameterize<HandTelepresence> & {
       cards: HandTelepresence['cards'];
       authenticationToken: HandTelepresence['authenticationToken'];
     },
@@ -42,7 +42,7 @@ export class HandTelepresence {
   }
 
   public static fromDto(
-    param: Omit<TDtoOf<HandTelepresence>, typeof handTelepresenceTypeSymbol> & {
+    param: TParameterize<HandTelepresence> & {
       cards: HandTelepresence['cards'];
       authenticationToken: HandTelepresence['authenticationToken'];
     },
@@ -53,7 +53,7 @@ export class HandTelepresence {
 
   /** プレイヤーの手札の様子を表す手札テレプレゼンスのオブジェクトを作成する。 */
   public static create(
-    param: Pick<TDtoOf<HandTelepresence>, 'id'> & {
+    param: Pick<TParameterize<HandTelepresence>, 'id'> & {
       /** 各手札の位置等の状態の一覧。 */
       readonly cards: HandTelepresence['cards'];
     },

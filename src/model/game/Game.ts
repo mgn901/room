@@ -1,4 +1,4 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { TId } from '../../utils/random-values/TId.ts';
 import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
@@ -25,13 +25,13 @@ export class Game {
   public readonly table: Table;
 
   //#region コンストラクタ他
-  private constructor(param: Omit<TDtoOf<Game>, typeof gameTypeSymbol>) {
+  private constructor(param: TParameterize<Game>) {
     this.id = param.id;
     this.players = param.players;
     this.table = param.table;
   }
 
-  public static fromDto(param: Omit<TDtoOf<Game>, typeof gameTypeSymbol>): Game {
+  public static fromDto(param: TParameterize<Game>): Game {
     return new Game(param);
   }
   //#endregion

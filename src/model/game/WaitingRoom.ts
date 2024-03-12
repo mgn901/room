@@ -1,4 +1,4 @@
-import { type TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { type TId, generateId } from '../../utils/random-values/TId.ts';
 import { type TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
@@ -32,7 +32,7 @@ export class WaitingRoom {
 
   //#region コンストラクタ他
   private constructor(
-    param: Omit<TDtoOf<WaitingRoom>, typeof waitingRoomTypeSymbol> & {
+    param: TParameterize<WaitingRoom> & {
       secret: WaitingRoom['secret'];
     },
   ) {
@@ -43,9 +43,7 @@ export class WaitingRoom {
   }
 
   public static fromDto(
-    param: Omit<TDtoOf<WaitingRoom>, typeof waitingRoomTypeSymbol> & {
-      secret: WaitingRoom['secret'];
-    },
+    param: TParameterize<WaitingRoom> & { secret: WaitingRoom['secret'] },
   ): WaitingRoom {
     return new WaitingRoom(param);
   }

@@ -1,4 +1,4 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { TId } from '../../utils/random-values/TId.ts';
 import { TLongSecret } from '../../utils/random-values/TLongSecret.ts';
@@ -41,7 +41,7 @@ export class Player {
 
   //#region コンストラクタ他
   private constructor(
-    param: Omit<TDtoOf<Player>, typeof playerTypeSymbol> & {
+    param: TParameterize<Player> & {
       readonly authenticationToken: Player['authenticationToken'];
     },
   ) {
@@ -53,7 +53,7 @@ export class Player {
   }
 
   public static fromDto(
-    param: Omit<TDtoOf<Player>, typeof playerTypeSymbol> & {
+    param: TParameterize<Player> & {
       readonly authenticationToken: Player['authenticationToken'];
     },
   ): Player {

@@ -1,4 +1,4 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
 import { Player } from '../player/Player.ts';
 import { IllegalAuthenticationTokenException } from '../player/PlayerContext.ts';
@@ -13,7 +13,7 @@ export class GamePlayerContext {
   /** このコンテキストオブジェクトでの操作が許可されている競技のID。 */
   public readonly gameId: Game['id'];
 
-  private constructor(param: Omit<TDtoOf<GamePlayerContext>, typeof gamePlayerContextTypeSymbol>) {
+  private constructor(param: TParameterize<GamePlayerContext>) {
     this.gameId = param.gameId;
   }
 

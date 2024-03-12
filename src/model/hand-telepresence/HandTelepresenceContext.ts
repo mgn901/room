@@ -1,4 +1,4 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
 import { IllegalAuthenticationTokenException } from '../player/PlayerContext.ts';
 import { HandTelepresence } from './HandTelepresence.ts';
@@ -12,9 +12,7 @@ export class HandTelepresenceContext {
   /** このコンテキストオブジェクトでの操作が許可されている手札テレプレゼンスのID。 */
   public readonly sharedHandId: HandTelepresence['id'];
 
-  private constructor(
-    param: Omit<TDtoOf<HandTelepresenceContext>, typeof handTelepresenceContextTypeSymbol>,
-  ) {
+  private constructor(param: TParameterize<HandTelepresenceContext>) {
     this.sharedHandId = param.sharedHandId;
   }
 

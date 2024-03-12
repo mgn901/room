@@ -2,7 +2,7 @@ import { type IllegalParamException } from '../../../model/errors/IllegalParamEx
 import { CardState } from '../../../model/hand-telepresence/CardState.ts';
 import { HandTelepresence } from '../../../model/hand-telepresence/HandTelepresence.ts';
 import { type Player } from '../../../model/player/Player.ts';
-import { type TDtoOf } from '../../../utils/dto-of/TDtoOf.ts';
+import { type TParameterize } from '../../../utils/dto-of/TParameterize.ts';
 import { Failure, Success, type TResult } from '../../../utils/result/TResult.ts';
 import { NotFoundException } from '../../errors/NotFoundException.ts';
 import { type IImplementationContainer } from '../../implementation-containers/IImplementationContainer.ts';
@@ -10,7 +10,7 @@ import { type RepositoryError } from '../../repositories/RepositoryError.ts';
 
 export const createHandTelepresence = (param: {
   readonly playerId: Player['id'];
-  readonly cards: Pick<TDtoOf<CardState>, 'card' | 'x' | 'y'>[];
+  readonly cards: Pick<TParameterize<CardState>, 'card' | 'x' | 'y'>[];
   readonly implementationContainer: IImplementationContainer;
 }): TResult<
   { handTelepresence: HandTelepresence },
