@@ -76,15 +76,12 @@ export class HandTelepresence {
     readonly index: number;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードをこすっている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードをこすっている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({
@@ -112,10 +109,10 @@ export class HandTelepresence {
       /** 指定されたカードの辺りを見回している時の手札テレプレゼンスのオブジェクト。 */
       sharedHand: HandTelepresence;
     },
-    IllegalParamException | IllegalContextException
+    IllegalParamException
   > {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     if (!Number.isInteger(param.index) || this.cards.length - 1 < param.index) {
       return new Failure(new IllegalParamException('存在しないカードを見ようとしています。'));
@@ -135,15 +132,12 @@ export class HandTelepresence {
     readonly indexes: Readonly<number[]>;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードを押さえている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードを押さえている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({
@@ -163,15 +157,12 @@ export class HandTelepresence {
     readonly amount: number;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードを持ち上げている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードを持ち上げている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({

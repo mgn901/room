@@ -49,15 +49,12 @@ export class Table {
     readonly cards: Readonly<ICard[]>;
     /** このゲームに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: GamePlayerContext;
-  }): TResult<
-    {
-      /** 捨てるカードを置いた後の場のオブジェクト。 */
-      table: Table;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 捨てるカードを置いた後の場のオブジェクト。 */
+    table: Table;
+  }> {
     if (param.context.gameId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       table: new Table({

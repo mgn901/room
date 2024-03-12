@@ -131,10 +131,10 @@ export class Player {
       /** 自分が手札を抜き取った後の隣のプレイヤーを表すオブジェクト。 */
       next: Player;
     },
-    IllegalContextException | IllegalActException
+    IllegalActException
   > {
     if (param.context.playerId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
 
     if (param.playerOnNext.id !== this.playerIdOnNext) {
@@ -168,17 +168,14 @@ export class Player {
   public toPairsDiscarded(param: {
     /** このプレイヤーに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: PlayerContext;
-  }): TResult<
-    {
-      /** 同位の札を捨てた後の自分のオブジェクト。 */
-      me: Player;
-      /** 捨てられた手札の一覧。 */
-      discarded: ICard[];
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 同位の札を捨てた後の自分のオブジェクト。 */
+    me: Player;
+    /** 捨てられた手札の一覧。 */
+    discarded: ICard[];
+  }> {
     if (param.context.playerId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
 
     const newCardsInHand = [...this.cardsInHand]

@@ -1,16 +1,16 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId, generateId } from '../../utils/random-values/TId.ts';
-import { TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
-import { TShortSecret, generateShortSecret } from '../../utils/random-values/TShortSecret.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId, generateId } from '../../utils/random-values/TId.ts';
+import { type TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
+import { type TShortSecret, generateShortSecret } from '../../utils/random-values/TShortSecret.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { MAX_PLAYER_COUNT } from '../constants.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
-import { PlayerContext } from '../player/PlayerContext.ts';
+import { type PlayerContext } from '../player/PlayerContext.ts';
 import { gameTypeSymbol } from './Game.ts';
-import { IWaitingPlayer, waitingPlayerTypeSymbol } from './IWaitingPlayer.ts';
-import { WaitingRoomOwnerContext } from './WaitingRoomOwnerContext.ts';
+import { type IWaitingPlayer, waitingPlayerTypeSymbol } from './IWaitingPlayer.ts';
+import { type WaitingRoomOwnerContext } from './WaitingRoomOwnerContext.ts';
 
 export const waitingRoomTypeSymbol = Symbol();
 
@@ -109,15 +109,12 @@ export class WaitingRoom {
     readonly playerId: WaitingPlayer['id'];
     /** 退出するプレイヤーに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: PlayerContext;
-  }): TResult<
-    {
-      /** プレイヤーが退出した後の待合室のオブジェクト。 */
-      waitingRoom: WaitingRoom;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** プレイヤーが退出した後の待合室のオブジェクト。 */
+    waitingRoom: WaitingRoom;
+  }> {
     if (param.context.playerId !== param.playerId) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       waitingRoom: new WaitingRoom({
@@ -134,15 +131,12 @@ export class WaitingRoom {
     readonly targetId: WaitingPlayer['id'];
     /** この待合室に対するオーナーとしての操作を許可するコンテキストオブジェクト。 */
     readonly context: WaitingRoomOwnerContext;
-  }): TResult<
-    {
-      /** プレイヤーがキックされた後の待合室のオブジェクト。 */
-      waitingRoom: WaitingRoom;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** プレイヤーがキックされた後の待合室のオブジェクト。 */
+    waitingRoom: WaitingRoom;
+  }> {
     if (param.context.waitingRoomId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
 
     return new Success({
