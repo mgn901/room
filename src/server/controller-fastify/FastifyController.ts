@@ -4,6 +4,9 @@ import { fastifyCookie } from '@fastify/cookie';
 import { fastifyHelmet } from '@fastify/helmet';
 import { fastifyStatic } from '@fastify/static';
 import fastify, { type FastifyInstance } from 'fastify';
+import fastifySocketIo from 'fastify-socket.io';
+import { listenSocket } from '../controller-socket-io/listenSocket.ts';
+import { TSocketIoServer } from '../controller-socket-io/socketIoTypes.ts';
 import { ControllerBase } from '../controller/ControllerBase.ts';
 import type { IImplementationContainer } from '../implementation-containers/IImplementationContainer.ts';
 import { apiRouteFactory } from './apiRouteFactory.ts';
@@ -17,6 +20,12 @@ export class FastifyController extends ControllerBase {
     this.fastifyInstance = fastify({ logger: true });
     this.fastifyInstance.register(fastifyHelmet);
     this.fastifyInstance.register(fastifyCookie);
+    this.fastifyInstance.register(fastifySocketIo);
+    this.fastifyInstance.ready().then(() => {
+      this.fastifyInstance.io.on('connection', (socket) => {
+        listenSocket(socket, container);
+      });
+    });
 
     // `/api`: ルーターがリクエストを処理して返す。
     this.fastifyInstance.register(apiRouteFactory(container), { prefix: '/api' });
@@ -60,5 +69,11 @@ export class FastifyController extends ControllerBase {
       host: this.container.env.HTTP_HOST,
       port: this.container.env.HTTP_PORT,
     });
+  }
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    io: TSocketIoServer;
   }
 }
