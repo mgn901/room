@@ -1,11 +1,11 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { Success } from '../../utils/result/TResult.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
-import { ICard } from '../values/ICard.ts';
-import { gameTypeSymbol } from './Game.ts';
-import { GamePlayerContext } from './GamePlayerContext.ts';
+import { type ICard } from '../values/ICard.ts';
+import { type gameTypeSymbol } from './Game.ts';
+import { type GamePlayerContext } from './GamePlayerContext.ts';
 
 export const tableTypeSymbol = Symbol();
 
@@ -20,12 +20,12 @@ export class Table {
   public readonly cards: Readonly<ICard[]>;
 
   //#region コンストラクタ他
-  public constructor(param: Omit<TDtoOf<Table>, typeof tableTypeSymbol>) {
+  public constructor(param: TParameterize<Table>) {
     this.id = param.id;
     this.cards = param.cards;
   }
 
-  public static fromDto(param: Omit<TDtoOf<Table>, typeof tableTypeSymbol>): Table {
+  public static fromDto(param: TParameterize<Table>): Table {
     return new Table(param);
   }
   //#endregion
@@ -49,15 +49,12 @@ export class Table {
     readonly cards: Readonly<ICard[]>;
     /** このゲームに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: GamePlayerContext;
-  }): TResult<
-    {
-      /** 捨てるカードを置いた後の場のオブジェクト。 */
-      table: Table;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 捨てるカードを置いた後の場のオブジェクト。 */
+    table: Table;
+  }> {
     if (param.context.gameId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       table: new Table({

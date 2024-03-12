@@ -1,8 +1,8 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalAuthenticationTokenException } from '../player/PlayerContext.ts';
-import { IWaitingPlayer } from './IWaitingPlayer.ts';
-import { WaitingRoom } from './WaitingRoom.ts';
+import { type IWaitingPlayer } from './IWaitingPlayer.ts';
+import { type WaitingRoom } from './WaitingRoom.ts';
 
 export const waitingRoomOwnerContextTypeSymbol = Symbol();
 
@@ -13,9 +13,7 @@ export class WaitingRoomOwnerContext {
   /** このコンテキストオブジェクトでのオーナーとしての操作が許可されている待合室のID。 */
   public readonly waitingRoomId: WaitingRoom['id'];
 
-  private constructor(
-    param: Omit<TDtoOf<WaitingRoomOwnerContext>, typeof waitingRoomOwnerContextTypeSymbol>,
-  ) {
+  private constructor(param: TParameterize<WaitingRoomOwnerContext>) {
     this.waitingRoomId = param.waitingRoomId;
   }
 

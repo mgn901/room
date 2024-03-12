@@ -1,17 +1,17 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { TLongSecret } from '../../utils/random-values/TLongSecret.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { type TLongSecret } from '../../utils/random-values/TLongSecret.ts';
 import { range } from '../../utils/range/range.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { except } from '../../utils/set-operations/except.ts';
 import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from '../constants.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { IllegalParamException } from '../errors/IllegalParamException.ts';
-import { IWaitingPlayer } from '../game/IWaitingPlayer.ts';
-import { ICard, compareCard } from '../values/ICard.ts';
-import { PlayerContext } from './PlayerContext.ts';
+import { type IWaitingPlayer } from '../game/IWaitingPlayer.ts';
+import { type ICard, compareCard } from '../values/ICard.ts';
+import { type PlayerContext } from './PlayerContext.ts';
 
 export const playerTypeSymbol = Symbol();
 
@@ -41,7 +41,7 @@ export class Player {
 
   //#region コンストラクタ他
   private constructor(
-    param: Omit<TDtoOf<Player>, typeof playerTypeSymbol> & {
+    param: TParameterize<Player> & {
       readonly authenticationToken: Player['authenticationToken'];
     },
   ) {
@@ -53,7 +53,7 @@ export class Player {
   }
 
   public static fromDto(
-    param: Omit<TDtoOf<Player>, typeof playerTypeSymbol> & {
+    param: TParameterize<Player> & {
       readonly authenticationToken: Player['authenticationToken'];
     },
   ): Player {
@@ -131,10 +131,10 @@ export class Player {
       /** 自分が手札を抜き取った後の隣のプレイヤーを表すオブジェクト。 */
       next: Player;
     },
-    IllegalContextException | IllegalActException
+    IllegalActException
   > {
     if (param.context.playerId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
 
     if (param.playerOnNext.id !== this.playerIdOnNext) {
@@ -168,17 +168,14 @@ export class Player {
   public toPairsDiscarded(param: {
     /** このプレイヤーに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: PlayerContext;
-  }): TResult<
-    {
-      /** 同位の札を捨てた後の自分のオブジェクト。 */
-      me: Player;
-      /** 捨てられた手札の一覧。 */
-      discarded: ICard[];
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 同位の札を捨てた後の自分のオブジェクト。 */
+    player: Player;
+    /** 捨てられた手札の一覧。 */
+    discarded: ICard[];
+  }> {
     if (param.context.playerId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
 
     const newCardsInHand = [...this.cardsInHand]
@@ -197,7 +194,7 @@ export class Player {
       }, []);
 
     return new Success({
-      me: new Player({
+      player: new Player({
         ...this,
         authenticationToken: this.authenticationToken,
         cardsInHand: newCardsInHand,

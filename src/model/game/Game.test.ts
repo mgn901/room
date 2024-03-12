@@ -34,8 +34,8 @@ describe('Game', () => {
         continue;
       }
       console.log(
-        JSON.stringify(discardResult.value.me.cardsInHand),
-        discardResult.value.discarded.length + discardResult.value.me.cardsInHand.length,
+        JSON.stringify(discardResult.value.player.cardsInHand),
+        discardResult.value.discarded.length + discardResult.value.player.cardsInHand.length,
       );
     }
   });

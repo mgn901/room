@@ -1,13 +1,14 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { compare } from '../../utils/compare/compare.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { type TLongSecret, generateLongSecret } from '../../utils/random-values/TLongSecret.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { IllegalParamException } from '../errors/IllegalParamException.ts';
-import { playerTypeSymbol } from '../player/Player.ts';
-import { ICard } from '../values/ICard.ts';
-import { HandTelepresenceContext } from './HandTelepresenceContext.ts';
+import { type playerTypeSymbol } from '../player/Player.ts';
+import { type CardState } from './CardState.ts';
+import { type HandTelepresenceContext } from './HandTelepresenceContext.ts';
 
 export const handTelepresenceTypeSymbol = Symbol();
 
@@ -21,16 +22,15 @@ export class HandTelepresence {
   /** 見られている手札の番号 */
   public readonly lookingAt: number;
 
+  /** 各手札の位置等の状態の一覧。 */
+  public readonly cards: Readonly<CardState[]>;
+
   /** 認証トークン。 */
   private readonly authenticationToken: TLongSecret;
 
-  /** 各手札の位置等の状態の一覧。 */
-  private readonly cards: Readonly<CardState[]>;
-
   //#region コンストラクタ他
   private constructor(
-    param: Omit<TDtoOf<HandTelepresence>, typeof handTelepresenceTypeSymbol> & {
-      cards: HandTelepresence['cards'];
+    param: TParameterize<HandTelepresence> & {
       authenticationToken: HandTelepresence['authenticationToken'];
     },
   ) {
@@ -41,8 +41,7 @@ export class HandTelepresence {
   }
 
   public static fromDto(
-    param: Omit<TDtoOf<HandTelepresence>, typeof handTelepresenceTypeSymbol> & {
-      cards: HandTelepresence['cards'];
+    param: TParameterize<HandTelepresence> & {
       authenticationToken: HandTelepresence['authenticationToken'];
     },
   ): HandTelepresence {
@@ -51,12 +50,7 @@ export class HandTelepresence {
   //#endregion
 
   /** プレイヤーの手札の様子を表す手札テレプレゼンスのオブジェクトを作成する。 */
-  public static create(
-    param: Pick<TDtoOf<HandTelepresence>, 'id'> & {
-      /** 各手札の位置等の状態の一覧。 */
-      readonly cards: HandTelepresence['cards'];
-    },
-  ): Success<{
+  public static create(param: Pick<TParameterize<HandTelepresence>, 'id' | 'cards'>): Success<{
     /** 作成された手札テレプレゼンスのオブジェクト。 */
     sharedHand: HandTelepresence;
   }> {
@@ -65,7 +59,7 @@ export class HandTelepresence {
         id: param.id,
         lookingAt: 0,
         authenticationToken: generateLongSecret(),
-        cards: [...param.cards].sort(),
+        cards: [...param.cards].sort((a, b) => compare(a.x, b.x)),
       }),
     });
   }
@@ -76,19 +70,17 @@ export class HandTelepresence {
     readonly index: number;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードをこすっている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードをこすっている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) => {
           // 押さえられているかによってずれ具合が変わる。
           const result = card.toPositionSet({
@@ -112,10 +104,10 @@ export class HandTelepresence {
       /** 指定されたカードの辺りを見回している時の手札テレプレゼンスのオブジェクト。 */
       sharedHand: HandTelepresence;
     },
-    IllegalParamException | IllegalContextException
+    IllegalParamException
   > {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     if (!Number.isInteger(param.index) || this.cards.length - 1 < param.index) {
       return new Failure(new IllegalParamException('存在しないカードを見ようとしています。'));
@@ -123,7 +115,7 @@ export class HandTelepresence {
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
-        cards: this.cards,
+        authenticationToken: this.authenticationToken,
         lookingAt: param.index,
       }),
     });
@@ -135,19 +127,17 @@ export class HandTelepresence {
     readonly indexes: Readonly<number[]>;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードを押さえている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードを押さえている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) =>
           param.indexes.includes(index) ? card.toHolded() : card.toUnholded(),
         ),
@@ -163,19 +153,17 @@ export class HandTelepresence {
     readonly amount: number;
     /** この手札テレプレゼンスに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: HandTelepresenceContext;
-  }): TResult<
-    {
-      /** 指定されたカードを持ち上げている時の手札テレプレゼンスのオブジェクト。 */
-      sharedHand: HandTelepresence;
-    },
-    IllegalContextException
-  > {
+  }): Success<{
+    /** 指定されたカードを持ち上げている時の手札テレプレゼンスのオブジェクト。 */
+    sharedHand: HandTelepresence;
+  }> {
     if (param.context.sharedHandId !== this.id) {
-      return new Failure(new IllegalContextException());
+      throw new IllegalContextException();
     }
     return new Success({
       sharedHand: new HandTelepresence({
         ...this,
+        authenticationToken: this.authenticationToken,
         cards: this.cards.map((card, index) => {
           const result = card.toDistanceFromInitialPositionSet({
             // 押さえられているかによって持ち上がり具合が変わる。
@@ -191,120 +179,5 @@ export class HandTelepresence {
 
   public dangerouslyGetAuthenticationToken(): TLongSecret {
     return this.authenticationToken;
-  }
-}
-
-/** 1枚のカードの状態を表すクラス。 */
-class CardState {
-  /** そのカードの種類。 */
-  public readonly card: ICard;
-
-  /**
-   * そのカードのX座標。
-   * 0以上1以下。
-   */
-  public readonly x: number;
-
-  /**
-   * そのカードのY座標。
-   * 0以上1以下。
-   */
-  public readonly y: number;
-
-  /**
-   * そのカードの持ち上がり具合。
-   * 1になるとカードが完全に離れたことを意味する。
-   * 0以上1以下。
-   */
-  public readonly distanceFromInitialPosition: number;
-
-  /** そのカードが押さえられているかどうか。 */
-  public readonly isHolded: boolean;
-
-  //#region コンストラクタ他
-  private constructor(param: TDtoOf<CardState>) {
-    this.card = param.card;
-    this.x = param.x;
-    this.y = param.y;
-    this.distanceFromInitialPosition = param.distanceFromInitialPosition;
-    this.isHolded = param.isHolded;
-  }
-
-  public static fromDto(param: TDtoOf<CardState>): CardState {
-    return new CardState(param);
-  }
-  //#endregion
-
-  /** 1枚のカードの状態を表すオブジェクトを作成する。 */
-  public static create(param: Pick<TDtoOf<CardState>, 'card' | 'x' | 'y'>): TResult<
-    {
-      /** 1枚のカードの状態を表すオブジェクト。 */
-      cardState: CardState;
-    },
-    IllegalParamException
-  > {
-    if (param.x < 0 || 1 < param.x || param.y < 0 || 1 < param.y) {
-      return new Failure(
-        new IllegalParamException('手札のX座標およびY座標は0以上1以下である必要があります。'),
-      );
-    }
-    return new Success({
-      cardState: new CardState({ ...param, distanceFromInitialPosition: 0, isHolded: false }),
-    });
-  }
-
-  /** カードの座標を変更した後のカードの状態を表すオブジェクトを返す。 */
-  public toPositionSet(param: {
-    /** 変更後のカードのX座標。 */
-    readonly x: number;
-    /** 変更後のカードのY座標。 */
-    readonly y: number;
-  }): TResult<
-    {
-      /** カードの座標を変更した後のカードの状態を表すオブジェクト。 */
-      cardState: CardState;
-    },
-    IllegalParamException
-  > {
-    if (param.x < 0 || 1 < param.x || param.y < 0 || 1 < param.y) {
-      return new Failure(
-        new IllegalParamException('手札のX座標およびY座標は0以上1以下である必要があります。'),
-      );
-    }
-    return new Success({ cardState: new CardState({ ...this, x: param.x, y: param.y }) });
-  }
-
-  /** カードの持ち上がり具合を変更した後のカードの状態を表すオブジェクトを返す。 */
-  public toDistanceFromInitialPositionSet(param: {
-    /** 変更後のカードの持ち上がり具合。 */
-    readonly distanceFromInitialPosition: number;
-  }): TResult<
-    {
-      /** カードの持ち上がり具合を変更した後のカードの状態を表すオブジェクト。 */
-      cardState: CardState;
-    },
-    IllegalParamException
-  > {
-    if (param.distanceFromInitialPosition < 0 || 1 < param.distanceFromInitialPosition) {
-      return new Failure(
-        new IllegalParamException('カードの持ち上がり具合は0以上1以下である必要があります。'),
-      );
-    }
-    return new Success({
-      cardState: new CardState({
-        ...this,
-        distanceFromInitialPosition: param.distanceFromInitialPosition,
-      }),
-    });
-  }
-
-  /** カードを押さえている時のカードの状態を表すオブジェクトを返す。 */
-  public toHolded(): Success<{ cardState: CardState }> {
-    return new Success({ cardState: new CardState({ ...this, isHolded: true }) });
-  }
-
-  /** カードを押さえていない時のカードの状態を表すオブジェクトを返す。 */
-  public toUnholded(): Success<{ cardState: CardState }> {
-    return new Success({ cardState: new CardState({ ...this, isHolded: false }) });
   }
 }

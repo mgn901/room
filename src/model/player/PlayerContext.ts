@@ -1,9 +1,9 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TLongSecret } from '../../utils/random-values/TLongSecret.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TLongSecret } from '../../utils/random-values/TLongSecret.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
-import { IWaitingPlayer } from '../game/IWaitingPlayer.ts';
-import { Player } from './Player.ts';
+import { type IWaitingPlayer } from '../game/IWaitingPlayer.ts';
+import { type Player } from './Player.ts';
 
 export const playerContextTypeSymbol = Symbol();
 
@@ -14,7 +14,7 @@ export class PlayerContext {
   /** このコンテキストオブジェクトでの操作が許可されているプレイヤーのID。 */
   public readonly playerId: Player['id'];
 
-  private constructor(param: Omit<TDtoOf<PlayerContext>, typeof playerContextTypeSymbol>) {
+  private constructor(param: TParameterize<PlayerContext>) {
     this.playerId = param.playerId;
   }
 

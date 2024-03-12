@@ -1,11 +1,13 @@
-import { TDtoOf } from '../../utils/dto-of/TDtoOf.ts';
-import { TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
-import { TId } from '../../utils/random-values/TId.ts';
-import { Failure, Success, TResult } from '../../utils/result/TResult.ts';
-import { IllegalParamException } from '../errors/IllegalParamException.ts';
+import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
+import { type TId } from '../../utils/random-values/TId.ts';
+import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
+import { IllegalContextException } from '../errors/IllegalContextException.ts';
+import { type IllegalParamException } from '../errors/IllegalParamException.ts';
 import { Player } from '../player/Player.ts';
+import { type GamePlayerContext } from './GamePlayerContext.ts';
 import { Table } from './Table.ts';
-import { WaitingRoom } from './WaitingRoom.ts';
+import { type WaitingRoom } from './WaitingRoom.ts';
 
 export const gameTypeSymbol = Symbol();
 
@@ -23,13 +25,13 @@ export class Game {
   public readonly table: Table;
 
   //#region コンストラクタ他
-  private constructor(param: Omit<TDtoOf<Game>, typeof gameTypeSymbol>) {
+  private constructor(param: TParameterize<Game>) {
     this.id = param.id;
     this.players = param.players;
     this.table = param.table;
   }
 
-  public static fromDto(param: Omit<TDtoOf<Game>, typeof gameTypeSymbol>): Game {
+  public static fromDto(param: TParameterize<Game>): Game {
     return new Game(param);
   }
   //#endregion
@@ -59,5 +61,15 @@ export class Game {
         table: Table.create({ id: param.waitingRoom.id }).value.table,
       }),
     });
+  }
+
+  public toTableSet(param: {
+    table: Table;
+    context: GamePlayerContext;
+  }): Success<{ game: Game }> {
+    if (param.context.gameId !== this.id) {
+      throw new IllegalContextException();
+    }
+    return new Success({ game: new Game({ ...this, table: param.table }) });
   }
 }
