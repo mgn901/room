@@ -13,7 +13,7 @@ export const createHandTelepresence = (param: {
   readonly cards: Pick<TParameterize<CardState>, 'card' | 'x' | 'y'>[];
   readonly implementationContainer: IImplementationContainer;
 }): TResult<
-  { handTelepresence: HandTelepresence },
+  { handTelepresence: HandTelepresence; playerIdOnPrev: Player['id'] },
   IllegalParamException | NotFoundException | RepositoryError
 > => {
   const findPlayerResult = param.implementationContainer.playerRepository.findById(param.playerId);
@@ -39,5 +39,8 @@ export const createHandTelepresence = (param: {
     cards,
   });
 
-  return new Success({ handTelepresence: createHandTelepresenceResult.value.sharedHand });
+  return new Success({
+    handTelepresence: createHandTelepresenceResult.value.sharedHand,
+    playerIdOnPrev: findPlayerResult.value.playerIdOnPrev,
+  });
 };

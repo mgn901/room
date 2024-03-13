@@ -2,9 +2,11 @@ import { type TParameterize } from '../../utils/dto-of/TParameterize.ts';
 import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { type TId } from '../../utils/random-values/TId.ts';
 import { Failure, Success, type TResult } from '../../utils/result/TResult.ts';
+import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
-import { type IllegalParamException } from '../errors/IllegalParamException.ts';
+import { IllegalParamException } from '../errors/IllegalParamException.ts';
 import { Player } from '../player/Player.ts';
+import { PlayerContext } from '../player/PlayerContext.ts';
 import { type GamePlayerContext } from './GamePlayerContext.ts';
 import { Table } from './Table.ts';
 import { type WaitingRoom } from './WaitingRoom.ts';
@@ -21,6 +23,13 @@ export class Game {
   /** 競技に参加しているプレイヤーの一覧。 */
   public readonly players: Readonly<Player[]>;
 
+  /** 上がったプレイヤーの一覧。 */
+  public readonly winners: Readonly<Player['id'][]>;
+
+  public readonly playerIdProceeding: Player['id'];
+
+  public readonly playerIdProceeded: Player['id'];
+
   /** 場（カードを捨てる場所）。 */
   public readonly table: Table;
 
@@ -28,6 +37,9 @@ export class Game {
   private constructor(param: TParameterize<Game>) {
     this.id = param.id;
     this.players = param.players;
+    this.winners = param.winners;
+    this.playerIdProceeding = param.playerIdProceeding;
+    this.playerIdProceeded = param.playerIdProceeded;
     this.table = param.table;
   }
 
@@ -58,7 +70,55 @@ export class Game {
       game: new Game({
         id: param.waitingRoom.id,
         players: createPlayersResult.value.players,
+        winners: [],
+        playerIdProceeding: createPlayersResult.value.players[0].id,
+        playerIdProceeded: createPlayersResult.value.players[1].id,
         table: Table.create({ id: param.waitingRoom.id }).value.table,
+      }),
+    });
+  }
+
+  public toWinnerAdded(param: {
+    player: Player;
+    context: GamePlayerContext;
+  }): TResult<{ game: Game }, IllegalParamException> {
+    if (param.context.gameId !== this.id) {
+      throw new IllegalContextException();
+    }
+
+    if (param.player.cardsInHand.length !== 0) {
+      return new Failure(new IllegalParamException('手札が残った状態で上がることはできません。'));
+    }
+
+    if (this.winners.includes(param.player.id)) {
+      return new Success({ game: this });
+    }
+
+    return new Success({
+      game: new Game({ ...this, winners: [...this.winners, param.player.id] }),
+    });
+  }
+
+  public toTurnChanged(param: {
+    context: PlayerContext;
+  }): TResult<
+    {
+      game: Game;
+    },
+    IllegalTurnChangeExeption
+  > {
+    if (param.context.playerId !== this.playerIdProceeding) {
+      return new Failure(
+        new IllegalTurnChangeExeption('他のプレイヤーが行動の終了を宣言することはできません。'),
+      );
+    }
+
+    return new Success({
+      game: new Game({
+        ...this,
+        playerIdProceeding: this.playerIdProceeded,
+        playerIdProceeded: this.players.find((player) => player.id === this.playerIdProceeded)
+          ?.playerIdOnNext,
       }),
     });
   }
@@ -66,10 +126,16 @@ export class Game {
   public toTableSet(param: {
     table: Table;
     context: GamePlayerContext;
-  }): Success<{ game: Game }> {
+  }): Success<{
+    game: Game;
+  }> {
     if (param.context.gameId !== this.id) {
       throw new IllegalContextException();
     }
     return new Success({ game: new Game({ ...this, table: param.table }) });
   }
+}
+
+export class IllegalTurnChangeExeption extends ApplicationErrorOrException {
+  public readonly name = 'IllegalTurnChangeExeption';
 }

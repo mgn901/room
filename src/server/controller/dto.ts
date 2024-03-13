@@ -126,3 +126,8 @@ export const toCardDto = (card: ICard): ICardDto => ({
   rank: card.rank,
   suit: card.suit,
 });
+
+export type IDtoOfErrorOrException = {
+  name: string;
+  message: string;
+};
