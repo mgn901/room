@@ -53,6 +53,9 @@ export type ICardDto = TDtoOf<ICard>;
 export const toGameDto = (game: Game): IGameDto => ({
   id: game.id,
   players: game.players.map(toPlayerDto),
+  winners: game.winners,
+  playerIdProceeding: game.playerIdProceeding,
+  playerIdProceeded: game.playerIdProceeded,
   table: toTableDto(game.table),
 });
 
@@ -126,3 +129,8 @@ export const toCardDto = (card: ICard): ICardDto => ({
   rank: card.rank,
   suit: card.suit,
 });
+
+export type IDtoOfErrorOrException = {
+  name: string;
+  message: string;
+};

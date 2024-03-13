@@ -10,11 +10,14 @@ import {
   type IWaitingRoomWithSecretDto,
   type TDtoOf,
 } from '../controller/dto.ts';
+import { type IDtoOfErrorOrException } from '../controller/dto.ts';
+import { type changeTurn } from '../interactors/games/changeTurn.ts';
 import { type createGame } from '../interactors/games/createGame.ts';
 import { type createWaitingRoom } from '../interactors/games/createWaitingRoom.ts';
 import { type joinWaitingRoom } from '../interactors/games/joinWaitingRoom.ts';
 import { type kickPlayer } from '../interactors/games/kickPlayer.ts';
 import { type leaveWaitingRoom } from '../interactors/games/leaveWaitingRoom.ts';
+import { type win } from '../interactors/games/win.ts';
 import { type discardPairs } from '../interactors/players/discardPairs.ts';
 import { type proceedAction } from '../interactors/players/proceedAction.ts';
 import { type createHandTelepresence } from '../interactors/shared-hands/createHandTelepresence.ts';
@@ -23,58 +26,72 @@ import { type lookCard } from '../interactors/shared-hands/lookCard.ts';
 import { type pickCard } from '../interactors/shared-hands/pickCard.ts';
 import { type scrubCard } from '../interactors/shared-hands/scrubCard.ts';
 
-export interface IClientToServerEvents {
-  'c:waitingRoom:create': TEventMapItemOf<TInputOf<typeof createWaitingRoom>>;
-  'c:waitingRoom:players:join': TEventMapItemOf<TInputOf<typeof joinWaitingRoom>>;
-  'c:waitingRoom:players:kick': TEventMapItemOf<TInputOf<typeof kickPlayer>>;
-  'c:waitingRoom:players:leave': TEventMapItemOf<TInputOf<typeof leaveWaitingRoom>>;
-  'c:game:create': TEventMapItemOf<TInputOf<typeof createGame>>;
-  'c:handTelepresence:create': TEventMapItemOf<TInputOf<typeof createHandTelepresence>>;
-  'c:handTelepresence:cards:hold': TEventMapItemOf<TInputOf<typeof holdCard>>;
-  'c:handTelepresence:cards:look': TEventMapItemOf<TInputOf<typeof lookCard>>;
-  'c:handTelepresence:cards:scrub': TEventMapItemOf<TInputOf<typeof scrubCard>>;
-  'c:handTelepresence:cards:pick': TEventMapItemOf<TInputOf<typeof pickCard>>;
-  'c:player:proceedAction': TEventMapItemOf<TInputOf<typeof proceedAction>>;
-  'c:player:discard': TEventMapItemOf<TInputOf<typeof discardPairs>>;
+export interface IClientToServerEventParams {
+  'c:waitingRoom:create': TInputOf<typeof createWaitingRoom>;
+  'c:waitingRoom:players:join': TInputOf<typeof joinWaitingRoom>;
+  'c:waitingRoom:players:kick': TInputOf<typeof kickPlayer>;
+  'c:waitingRoom:players:leave': TInputOf<typeof leaveWaitingRoom>;
+  'c:game:create': TInputOf<typeof createGame>;
+  'c:game:changeTurn': TInputOf<typeof changeTurn>;
+  'c:game:win': TInputOf<typeof win>;
+  'c:handTelepresence:create': TInputOf<typeof createHandTelepresence>;
+  'c:handTelepresence:cards:hold': TInputOf<typeof holdCard>;
+  'c:handTelepresence:cards:look': TInputOf<typeof lookCard>;
+  'c:handTelepresence:cards:scrub': TInputOf<typeof scrubCard>;
+  'c:handTelepresence:cards:pick': TInputOf<typeof pickCard>;
+  'c:player:proceedAction': TInputOf<typeof proceedAction>;
+  'c:player:discard': TInputOf<typeof discardPairs>;
 }
 
-export interface IServerToClientEvents {
-  's:waitingRoom:changed': TEventMapItemOf<{ waitingRoom: IWaitingRoomDto }>;
-  's:game:changed': TEventMapItemOf<{ game: IGameDto }>;
-  's:handTelepresence:changed': TEventMapItemOf<{ handTelepresence: IHandTelepresenceDto }>;
-  's:player:changed': TEventMapItemOf<{ player: IPlayerDto }>;
-  's:waitingRoom:create:ok': TEventMapItemOf<{ waitingRoom: IWaitingRoomWithSecretDto }>;
-  's:waitingRoom:players:join:ok': TEventMapItemOf<{
+export type IClientToServerEvents = {
+  [k in keyof IClientToServerEventParams]: TEventMapItemOf<IClientToServerEventParams[k]>;
+};
+
+export interface IServerToClientEventParams {
+  's:waitingRoom:changed': { waitingRoom: IWaitingRoomDto };
+  's:game:changed': { game: IGameDto };
+  's:handTelepresence:changed': { handTelepresence: IHandTelepresenceDto };
+  's:handTelepresence:ready': { handTelepresence: IHandTelepresenceWithAuthenticationTokenDto };
+  's:player:changed': { player: IPlayerDto };
+  's:waitingRoom:create:ok': {
+    waitingRoom: IWaitingRoomWithSecretDto;
+    waitingPlayer: IWaitingPlayerWithAuthenticationTokenDto;
+  };
+  's:waitingRoom:players:join:ok': {
     waitingRoom: IWaitingRoomWithSecretDto;
     newPlayer: IWaitingPlayerWithAuthenticationTokenDto;
-  }>;
-  's:waitingRoom:players:kick:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof kickPlayer>>>;
-  's:waitingRoom:players:leave:ok': TEventMapItemOf<
-    TDtoOf<TSuccessOutputOf<typeof leaveWaitingRoom>>
-  >;
-  's:game:create:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof createGame>>>;
-  's:handTelepresence:create:ok': TEventMapItemOf<{
-    handTelepresence: IHandTelepresenceWithAuthenticationTokenDto;
-  }>;
-  's:handTelepresence:cards:hold:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof holdCard>>>;
-  's:handTelepresence:cards:look:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof lookCard>>>;
-  's:handTelepresence:cards:scrub:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof scrubCard>>>;
-  's:handTelepresence:cards:pick:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof pickCard>>>;
-  's:player:proceedAction:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof proceedAction>>>;
-  's:player:discard:ok': TEventMapItemOf<TDtoOf<TSuccessOutputOf<typeof discardPairs>>>;
-  's:waitingRoom:create:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:waitingRoom:players:join:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:waitingRoom:players:kick:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:waitingRoom:players:leave:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:game:create:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:handTelepresence:create:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:handTelepresence:cards:hold:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:handTelepresence:cards:look:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:handTelepresence:cards:scrub:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:handTelepresence:cards:pick:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:player:proceedAction:error': TEventMapItemOf<IDtoOfErrorOrException>;
-  's:player:discard:error': TEventMapItemOf<IDtoOfErrorOrException>;
+  };
+  's:waitingRoom:players:kick:ok': TDtoOf<TSuccessOutputOf<typeof kickPlayer>>;
+  's:waitingRoom:players:leave:ok': TDtoOf<TSuccessOutputOf<typeof leaveWaitingRoom>>;
+  's:game:create:ok': TDtoOf<TSuccessOutputOf<typeof createGame>>;
+  's:game:changeTurn:ok': TDtoOf<TSuccessOutputOf<typeof changeTurn>>;
+  's:game:win:ok': TDtoOf<TSuccessOutputOf<typeof win>>;
+  's:handTelepresence:create:ok': { handTelepresence: IHandTelepresenceWithAuthenticationTokenDto };
+  's:handTelepresence:cards:hold:ok': TDtoOf<TSuccessOutputOf<typeof holdCard>>;
+  's:handTelepresence:cards:look:ok': TDtoOf<TSuccessOutputOf<typeof lookCard>>;
+  's:handTelepresence:cards:scrub:ok': TDtoOf<TSuccessOutputOf<typeof scrubCard>>;
+  's:handTelepresence:cards:pick:ok': TDtoOf<TSuccessOutputOf<typeof pickCard>>;
+  's:player:proceedAction:ok': TDtoOf<TSuccessOutputOf<typeof proceedAction>>;
+  's:player:discard:ok': TDtoOf<TSuccessOutputOf<typeof discardPairs>>;
+  's:waitingRoom:create:error': IDtoOfErrorOrException;
+  's:waitingRoom:players:join:error': IDtoOfErrorOrException;
+  's:waitingRoom:players:kick:error': IDtoOfErrorOrException;
+  's:waitingRoom:players:leave:error': IDtoOfErrorOrException;
+  's:game:create:error': IDtoOfErrorOrException;
+  's:game:changeTurn:error': IDtoOfErrorOrException;
+  's:game:win:error': IDtoOfErrorOrException;
+  's:handTelepresence:create:error': IDtoOfErrorOrException;
+  's:handTelepresence:cards:hold:error': IDtoOfErrorOrException;
+  's:handTelepresence:cards:look:error': IDtoOfErrorOrException;
+  's:handTelepresence:cards:scrub:error': IDtoOfErrorOrException;
+  's:handTelepresence:cards:pick:error': IDtoOfErrorOrException;
+  's:player:proceedAction:error': IDtoOfErrorOrException;
+  's:player:discard:error': IDtoOfErrorOrException;
 }
+
+export type IServerToClientEvents = {
+  [k in keyof IServerToClientEventParams]: TEventMapItemOf<IServerToClientEventParams[k]>;
+};
 
 export type TSocketIoServer = Server<IClientToServerEvents, IServerToClientEvents>;
 
@@ -97,8 +114,3 @@ type TSuccessOutputOf<
   S = Exclude<ReturnType<I>, Failure<Error>>['value'],
   F extends Error = Exclude<ReturnType<I>, Success<S>>['value'],
 > = Extract<ReturnType<I>, Success<S>>['value'];
-
-type IDtoOfErrorOrException = {
-  name: string;
-  message: string;
-};

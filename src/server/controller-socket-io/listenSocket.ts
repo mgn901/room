@@ -9,11 +9,13 @@ import {
   toWaitingRoomWithSecretDto,
 } from '../controller/dto.ts';
 import { type IImplementationContainer } from '../implementation-containers/IImplementationContainer.ts';
+import { changeTurn } from '../interactors/games/changeTurn.ts';
 import { createGame } from '../interactors/games/createGame.ts';
 import { createWaitingRoom } from '../interactors/games/createWaitingRoom.ts';
 import { joinWaitingRoom } from '../interactors/games/joinWaitingRoom.ts';
 import { kickPlayer } from '../interactors/games/kickPlayer.ts';
 import { leaveWaitingRoom } from '../interactors/games/leaveWaitingRoom.ts';
+import { win } from '../interactors/games/win.ts';
 import { discardPairs } from '../interactors/players/discardPairs.ts';
 import { proceedAction } from '../interactors/players/proceedAction.ts';
 import { createHandTelepresence } from '../interactors/shared-hands/createHandTelepresence.ts';
@@ -34,9 +36,11 @@ export const listenSocket = (
       handleFailure({ socket, name: 's:waitingRoom:create:error', failure: result });
       return;
     }
-    socket.join(`waitingRoom:${result.value.waitingRoom.id}`);
+    socket.join(`game:${result.value.waitingRoom.id}`);
+    socket.join(`player:${result.value.waitingPlayer.id}`);
     socket.emit('s:waitingRoom:create:ok', {
       waitingRoom: toWaitingRoomWithSecretDto(result.value.waitingRoom),
+      waitingPlayer: toWaitingPlayerWithAuthenticationTokenDto(result.value.waitingPlayer),
     });
   });
 
@@ -46,9 +50,10 @@ export const listenSocket = (
       handleFailure({ socket, name: 's:waitingRoom:players:join:error', failure: result });
       return;
     }
-    socket.join(`waitingRoom:${result.value.waitingRoom.id}`);
+    socket.join(`game:${result.value.waitingRoom.id}`);
+    socket.join(`player:${result.value.newPlayer.id}`);
     socket
-      .in(`waitingRoom:${result.value.waitingRoom.id}`)
+      .in(`game:${result.value.waitingRoom.id}`)
       .emit('s:waitingRoom:changed', { waitingRoom: toWaitingRoomDto(result.value.waitingRoom) });
     socket.emit('s:waitingRoom:players:join:ok', {
       newPlayer: toWaitingPlayerWithAuthenticationTokenDto(result.value.newPlayer),
@@ -63,7 +68,7 @@ export const listenSocket = (
       return;
     }
     socket
-      .in(`waitingRoom:${result.value.waitingRoom}`)
+      .in(`game:${result.value.waitingRoom}`)
       .emit('s:waitingRoom:changed', { waitingRoom: toWaitingRoomDto(result.value.waitingRoom) });
   });
 
@@ -73,9 +78,9 @@ export const listenSocket = (
       handleFailure({ socket, name: 's:waitingRoom:players:leave:error', failure: result });
       return;
     }
-    socket.leave(`waitingRoom:${result.value.waitingRoom.id}`);
+    socket.leave(`game:${result.value.waitingRoom.id}`);
     socket
-      .in(`waitingRoom:${result.value.waitingRoom.id}`)
+      .in(`game:${result.value.waitingRoom.id}`)
       .emit('s:waitingRoom:changed', { waitingRoom: toWaitingRoomDto(result.value.waitingRoom) });
     socket.emit('s:waitingRoom:players:leave:ok', {
       waitingRoom: toWaitingRoomDto(result.value.waitingRoom),
@@ -88,12 +93,38 @@ export const listenSocket = (
       handleFailure({ socket, name: 's:game:create:error', failure: result });
       return;
     }
-    socket.in(`waitingRoom:${result.value.game.id}`).socketsJoin(`game:${result.value.game.id}`);
-    socket.in(`game:${result.value.game.id}`).socketsLeave(`waitingRoom:${result.value.game.id}`);
     socket
       .in(`game:${result.value.game.id}`)
       .emit('s:game:changed', { game: toGameDto(result.value.game) });
     socket.emit('s:game:create:ok', { game: toGameDto(result.value.game) });
+  });
+
+  socket.on('c:game:changeTurn', (param) => {
+    const result = changeTurn({ ...param, implementationContainer });
+    if (result instanceof Failure) {
+      handleFailure({ socket, name: 's:game:changeTurn:error', failure: result });
+      return;
+    }
+    socket
+      .in(`game:${result.value.game.id}`)
+      .emit('s:game:changed', { game: toGameDto(result.value.game) });
+    socket.emit('s:game:changeTurn:ok', { game: toGameDto(result.value.game) });
+  });
+
+  socket.on('c:game:win', (param) => {
+    const result = win({ ...param, implementationContainer });
+    if (result instanceof Failure) {
+      handleFailure({ socket, name: 's:game:win:error', failure: result });
+      return;
+    }
+    socket
+      .in(`game:${result.value.game.id}`)
+      .emit('s:game:changed', { game: toGameDto(result.value.game) });
+    socket.emit('s:game:win:ok', { game: toGameDto(result.value.game) });
+    // 全員が上がった場合はSocket.IOのルームを削除
+    if (result.value.game.players.length === result.value.game.winners.length) {
+      socket.in(`game:${result.value.game.id}`).socketsLeave(`game:${result.value.game.id}`);
+    }
   });
 
   socket.on('c:handTelepresence:create', (param) => {
@@ -104,6 +135,9 @@ export const listenSocket = (
     }
     socket.in([...socket.rooms]).emit('s:handTelepresence:changed', {
       handTelepresence: toHandTelepresenceDto(result.value.handTelepresence),
+    });
+    socket.in(`player:${result.value.playerIdOnPrev}`).emit('s:handTelepresence:ready', {
+      handTelepresence: toHandTelepresenceWithAuthenticationTokenDto(result.value.handTelepresence),
     });
     socket.emit('s:handTelepresence:create:ok', {
       handTelepresence: toHandTelepresenceWithAuthenticationTokenDto(result.value.handTelepresence),
