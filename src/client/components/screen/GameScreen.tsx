@@ -1,7 +1,7 @@
 import { type FC } from 'react';
 import { useGameClient, useWaitingRoomClient } from '../clientHooks.ts';
-import { LeaveRoomPresentation } from '../common/LeaveRoomPresentation.tsx';
-import { LoadingPresentation } from '../common/LoadingPresentation.tsx';
+import { LeaveRoomWidget } from '../common/LeaveRoomWidget.tsx';
+import { LoadingWidget } from '../common/LoadingWidget.tsx';
 import { GameResultContainer } from '../game/GameResultContainer.tsx';
 import { HandTelepresenceFpvContainer } from '../game/HandTelepresenceFpvContainer.tsx';
 import { HandTelepresenceSpvContainer } from '../game/HandTelepresenceSpvContainer.tsx';
@@ -14,11 +14,11 @@ export const GameScreen: FC = () => {
   const me = waitingGameClient.me;
 
   if (gameClient.isProcessing && (game === undefined || me === undefined)) {
-    return <LoadingPresentation />;
+    return <LoadingWidget />;
   }
 
   if (game === undefined || me === undefined) {
-    return <LeaveRoomPresentation />;
+    return <LeaveRoomWidget />;
   }
 
   if (game.players.length === 0) {

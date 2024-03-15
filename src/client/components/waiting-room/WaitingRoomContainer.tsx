@@ -4,8 +4,8 @@ import { type IWaitingPlayer } from '../../../model/game/IWaitingPlayer.ts';
 import { type TPrimitive } from '../../../utils/primitives/TPrimitive.ts';
 import { isId } from '../../../utils/random-values/TId.ts';
 import { useGameClient, useWaitingRoomClient } from '../clientHooks.ts';
-import { LeaveRoomPresentation } from '../common/LeaveRoomPresentation.tsx';
-import { LoadingPresentation } from '../common/LoadingPresentation.tsx';
+import { LeaveRoomWidget } from '../common/LeaveRoomWidget.tsx';
+import { LoadingWidget } from '../common/LoadingWidget.tsx';
 import { Button } from '../common/wrappedElements.tsx';
 
 export const WaitingRoomContainer: FC = () => {
@@ -22,11 +22,11 @@ export const WaitingRoomContainer: FC = () => {
   }, [navigate, gameClient.game]);
 
   if (waitingRoomClient.isProcessing && (waitingRoom === undefined || me === undefined)) {
-    return <LoadingPresentation />;
+    return <LoadingWidget />;
   }
 
   if (waitingRoom === undefined || me === undefined) {
-    return <LeaveRoomPresentation />;
+    return <LeaveRoomWidget />;
   }
 
   const handleClickKickButton = (keys: TPrimitive[]) => {
