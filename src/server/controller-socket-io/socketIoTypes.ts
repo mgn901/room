@@ -14,6 +14,7 @@ import { type IDtoOfErrorOrException } from '../controller/dto.ts';
 import { type changeTurn } from '../interactors/games/changeTurn.ts';
 import { type createGame } from '../interactors/games/createGame.ts';
 import { type createWaitingRoom } from '../interactors/games/createWaitingRoom.ts';
+import { deleteWaitingRoom } from '../interactors/games/deleteWaitingRoom.ts';
 import { type joinWaitingRoom } from '../interactors/games/joinWaitingRoom.ts';
 import { type kickPlayer } from '../interactors/games/kickPlayer.ts';
 import { type leaveWaitingRoom } from '../interactors/games/leaveWaitingRoom.ts';
@@ -28,6 +29,7 @@ import { type scrubCard } from '../interactors/shared-hands/scrubCard.ts';
 
 export interface IClientToServerEventParams {
   'c:waitingRoom:create': TInputOf<typeof createWaitingRoom>;
+  'c:waitingRoom:delete': TInputOf<typeof deleteWaitingRoom>;
   'c:waitingRoom:players:join': TInputOf<typeof joinWaitingRoom>;
   'c:waitingRoom:players:kick': TInputOf<typeof kickPlayer>;
   'c:waitingRoom:players:leave': TInputOf<typeof leaveWaitingRoom>;
@@ -49,6 +51,7 @@ export type IClientToServerEvents = {
 
 export interface IServerToClientEventParams {
   's:waitingRoom:changed': { waitingRoom: IWaitingRoomDto };
+  's:waitingRoom:deleted': { waitingRoom: IWaitingRoomDto };
   's:game:changed': { game: IGameDto };
   's:handTelepresence:changed': { handTelepresence: IHandTelepresenceDto };
   's:handTelepresence:ready': { handTelepresence: IHandTelepresenceWithAuthenticationTokenDto };
@@ -56,6 +59,9 @@ export interface IServerToClientEventParams {
   's:waitingRoom:create:ok': {
     waitingRoom: IWaitingRoomWithSecretDto;
     waitingPlayer: IWaitingPlayerWithAuthenticationTokenDto;
+  };
+  's:waitingRoom:delete:ok': {
+    waitingRoom: IWaitingRoomDto;
   };
   's:waitingRoom:players:join:ok': {
     waitingRoom: IWaitingRoomWithSecretDto;
@@ -74,6 +80,7 @@ export interface IServerToClientEventParams {
   's:player:proceedAction:ok': TDtoOf<TSuccessOutputOf<typeof proceedAction>>;
   's:player:discard:ok': TDtoOf<TSuccessOutputOf<typeof discardPairs>>;
   's:waitingRoom:create:error': IDtoOfErrorOrException;
+  's:waitingRoom:delete:error': IDtoOfErrorOrException;
   's:waitingRoom:players:join:error': IDtoOfErrorOrException;
   's:waitingRoom:players:kick:error': IDtoOfErrorOrException;
   's:waitingRoom:players:leave:error': IDtoOfErrorOrException;

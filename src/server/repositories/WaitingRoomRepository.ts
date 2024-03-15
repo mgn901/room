@@ -23,7 +23,11 @@ export class WaitingRoomRepository {
   }
 
   public delete(id: WaitingRoom['id']): TResult<true, RepositoryError> {
+    const deleted = this.mapById.get(id);
     this.mapById.delete(id);
+    if (deleted !== undefined) {
+      this.mapBySecret.delete(deleted.dangerouslyGetSecret());
+    }
     return new Success(true as const);
   }
 }

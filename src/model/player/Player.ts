@@ -30,12 +30,13 @@ export class Player {
 
   /**
    * 自分の次にアクションをするプレイヤー。
-   * つまり、自分がそのプレイヤーの手札を抜き取る。*/
+   * つまり、そのプレイヤーが自分の手札を抜き取る。
+   */
   public readonly playerIdOnNext: Player['id'];
 
   /**
    * 自分の前にアクションをするプレイヤー。
-   * つまり、そのプレイヤーが自分の手札を抜き取る。
+   * つまり、自分がそのプレイヤーの手札を抜き取る。
    */
   public readonly playerIdOnPrev: Player['id'];
 

@@ -1,5 +1,8 @@
 import { type IWaitingPlayer } from '../../../model/game/IWaitingPlayer.ts';
-import { type WaitingRoom } from '../../../model/game/WaitingRoom.ts';
+import {
+  type WaitingRoom,
+  type WaitingRoomLeaveFailureException,
+} from '../../../model/game/WaitingRoom.ts';
 import {
   IllegalAuthenticationTokenException,
   PlayerContext,
@@ -17,7 +20,10 @@ export const leaveWaitingRoom = (param: {
   readonly implementationContainer: IImplementationContainer;
 }): TResult<
   { waitingRoom: WaitingRoom },
-  NotFoundException | IllegalAuthenticationTokenException | RepositoryError
+  | WaitingRoomLeaveFailureException
+  | NotFoundException
+  | IllegalAuthenticationTokenException
+  | RepositoryError
 > => {
   const findResult = param.implementationContainer.waitingRoomRepository.findById(
     param.waitingRoomId,
@@ -48,6 +54,9 @@ export const leaveWaitingRoom = (param: {
     playerId: target.id,
     context: createContextResult.value.context,
   });
+  if (leaveResult instanceof Failure) {
+    return leaveResult;
+  }
 
   const saveResult = param.implementationContainer.waitingRoomRepository.save(
     leaveResult.value.waitingRoom,

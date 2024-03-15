@@ -107,12 +107,22 @@ export class WaitingRoom {
     readonly playerId: WaitingPlayer['id'];
     /** 退出するプレイヤーに対する操作を許可するコンテキストオブジェクト。 */
     readonly context: PlayerContext;
-  }): Success<{
-    /** プレイヤーが退出した後の待合室のオブジェクト。 */
-    waitingRoom: WaitingRoom;
-  }> {
+  }): TResult<
+    {
+      /** プレイヤーが退出した後の待合室のオブジェクト。 */
+      waitingRoom: WaitingRoom;
+    },
+    WaitingRoomLeaveFailureException
+  > {
     if (param.context.playerId !== param.playerId) {
       throw new IllegalContextException();
+    }
+    if (param.context.playerId === this.ownerId) {
+      return new Failure(
+        new WaitingRoomLeaveFailureException(
+          '待合室のオーナーは退出できません。代わりに待合室を削除する必要があります。',
+        ),
+      );
     }
     return new Success({
       waitingRoom: new WaitingRoom({
@@ -157,6 +167,10 @@ export class InvalidSecretException extends ApplicationErrorOrException {
 
 export class MaxPlayerCountExceededException extends ApplicationErrorOrException {
   public readonly name = 'MaxPlayerCountExceededException';
+}
+
+export class WaitingRoomLeaveFailureException extends ApplicationErrorOrException {
+  public readonly name = 'WaitingRoomLeaveFailureException';
 }
 
 class WaitingPlayer implements IWaitingPlayer {
