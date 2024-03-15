@@ -6,24 +6,21 @@ import { type CardState } from '../../model/hand-telepresence/CardState.ts';
 import { type HandTelepresence } from '../../model/hand-telepresence/HandTelepresence.ts';
 import { type Player } from '../../model/player/Player.ts';
 import { type ICard } from '../../model/values/ICard.ts';
+import { type TNominalPrimitive } from '../../utils/primitives/TNominalPrimitive.ts';
 import { type TPrimitive } from '../../utils/primitives/TPrimitive.ts';
 import { type TLongSecret } from '../../utils/random-values/TLongSecret.ts';
 import { type TShortSecret } from '../../utils/random-values/TShortSecret.ts';
 
-export type TDtoOf<E extends object> = Omit<
-  {
-    [k in keyof E as E[k] extends (...args: never) => unknown ? never : k]: E[k] extends
-      | TPrimitive
-      | TPrimitive[]
-      ? E[k]
-      : E[k] extends object[]
-        ? TDtoOf<E[k][number]>[]
-        : E[k] extends object
-          ? TDtoOf<E[k]>
-          : never;
-  },
-  symbol
->;
+export type TDtoOf<E> = E extends ReadonlyArray<infer U>
+  ? ReadonlyArray<TDtoOf<U>>
+  : E extends TNominalPrimitive<TPrimitive, infer V>
+    ? E
+    : E extends object
+      ? Omit<
+          { [k in keyof E as E[k] extends (...args: never) => unknown ? never : k]: TDtoOf<E[k]> },
+          symbol
+        >
+      : E;
 
 export type IGameDto = TDtoOf<Game>;
 export type ITableDto = TDtoOf<Table>;
@@ -91,8 +88,6 @@ export const toWaitingPlayerWithAuthenticationTokenDto = (
 export const toPlayerDto = (player: Player): IPlayerDto => ({
   id: player.id,
   cardsInHand: player.cardsInHand.map(toCardDto),
-  playerIdOnNext: player.playerIdOnNext,
-  playerIdOnPrev: player.playerIdOnPrev,
 });
 
 export const toPlayerWithAuthenticationTokenDto = (

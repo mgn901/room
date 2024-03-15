@@ -1,3 +1,4 @@
+import { type Game } from '../../../model/game/Game.ts';
 import { type IllegalActException, type Player } from '../../../model/player/Player.ts';
 import {
   type IllegalAuthenticationTokenException,
@@ -10,6 +11,7 @@ import { type IImplementationContainer } from '../../implementation-containers/I
 import { type RepositoryError } from '../../repositories/RepositoryError.ts';
 
 export const proceedAction = (param: {
+  readonly gameId: Game['id'];
   readonly playerId: Player['id'];
   readonly index: number;
   readonly authenticationToken: TLongSecret;
@@ -18,6 +20,14 @@ export const proceedAction = (param: {
   { me: Player; next: Player },
   NotFoundException | IllegalActException | IllegalAuthenticationTokenException | RepositoryError
 > => {
+  const findGameResult = param.implementationContainer.gameRepository.findById(param.gameId);
+  if (findGameResult instanceof Failure) {
+    return findGameResult;
+  }
+  if (findGameResult.value === undefined) {
+    return new Failure(new NotFoundException('指定されたIDの競技が見つかりません。'));
+  }
+
   const findMeResult = param.implementationContainer.playerRepository.findById(param.playerId);
   if (findMeResult instanceof Failure) {
     return findMeResult;
@@ -27,7 +37,7 @@ export const proceedAction = (param: {
   }
 
   const findPlayerOnNextResult = param.implementationContainer.playerRepository.findById(
-    findMeResult.value.playerIdOnNext,
+    findGameResult.value.playerIdProceeded,
   );
   if (findPlayerOnNextResult instanceof Failure) {
     return findPlayerOnNextResult;
@@ -45,6 +55,7 @@ export const proceedAction = (param: {
   }
 
   const proceedResult = findMeResult.value.toActionProceeded({
+    game: findGameResult.value,
     playerOnNext: findPlayerOnNextResult.value,
     index: param.index,
     context: createContextResult.value.context,

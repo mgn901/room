@@ -1,6 +1,6 @@
 import { type IClientToServerEventParams } from '../../server/controller-socket-io/socketIoTypes.ts';
 import { type IGameDto } from '../../server/controller/dto.ts';
-import { ClientBase } from './ClientBase.ts';
+import { ClientBase, ISnapshot } from './ClientBase.ts';
 
 export class GameClient extends ClientBase {
   private _game: IGameDto | undefined;
@@ -12,6 +12,7 @@ export class GameClient extends ClientBase {
     super(param);
     this.socket.on('s:game:changed', (param) => {
       this._game = param.game;
+      this.dispatchEvent(new Event('update'));
     });
   }
 
@@ -43,17 +44,18 @@ export class GameClient extends ClientBase {
     });
   }
 
-  public win(param: IClientToServerEventParams['c:game:win']) {
-    this.socket.emit('c:game:win', param);
-    this.startProcess();
+  protected isChanged(snapshot: ISnapshot<this>): boolean {
+    return snapshot.game !== this._game;
+  }
 
-    this.socket.once('s:game:win:ok', (param) => {
-      this._game = param.game;
-      this.finishProcess('s:game:win:error');
-    });
-
-    this.socket.once('s:game:win:error', (param) => {
-      this.handleError('s:game:win:ok', param);
-    });
+  protected createSnapshot(): ISnapshot<this> {
+    return {
+      ...this,
+      changeTurn: this.changeTurn.bind(this),
+      create: this.create.bind(this),
+      error: this._error,
+      game: this._game,
+      isProcessing: this._isProcessing,
+    };
   }
 }

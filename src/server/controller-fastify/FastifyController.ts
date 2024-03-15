@@ -6,7 +6,7 @@ import { fastifyStatic } from '@fastify/static';
 import fastify, { type FastifyInstance } from 'fastify';
 import fastifySocketIo from 'fastify-socket.io';
 import { listenSocket } from '../controller-socket-io/listenSocket.ts';
-import { TSocketIoServer } from '../controller-socket-io/socketIoTypes.ts';
+import { type TSocketIoServer } from '../controller-socket-io/socketIoTypes.ts';
 import { ControllerBase } from '../controller/ControllerBase.ts';
 import type { IImplementationContainer } from '../implementation-containers/IImplementationContainer.ts';
 import { apiRouteFactory } from './apiRouteFactory.ts';

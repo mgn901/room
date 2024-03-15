@@ -1,6 +1,6 @@
 import { type IClientToServerEventParams } from '../../server/controller-socket-io/socketIoTypes.ts';
 import { type IPlayerDto } from '../../server/controller/dto.ts';
-import { ClientBase } from './ClientBase.ts';
+import { ClientBase, ISnapshot } from './ClientBase.ts';
 
 export class PlayerClient extends ClientBase {
   private _players = new Map<IPlayerDto['id'], IPlayerDto>();
@@ -17,6 +17,7 @@ export class PlayerClient extends ClientBase {
     super(param);
     this.socket.on('s:player:changed', (param) => {
       this._players.set(param.player.id, param.player);
+      this.dispatchEvent(new Event('update'));
     });
   }
 
@@ -46,5 +47,24 @@ export class PlayerClient extends ClientBase {
     this.socket.once('s:player:discard:error', (param) => {
       this.handleError('s:player:discard:ok', param);
     });
+  }
+
+  protected isChanged(snapshot: ISnapshot<this>): boolean {
+    return (
+      snapshot.me !== this._me ||
+      [...snapshot.players.values()].some((player) => player !== this._players.get(player.id))
+    );
+  }
+
+  protected createSnapshot(): ISnapshot<this> {
+    return {
+      ...this,
+      discard: this.discard.bind(this),
+      error: this._error,
+      isProcessing: this._isProcessing,
+      me: this._me,
+      players: this._players,
+      proceedAction: this.proceedAction.bind(this),
+    };
   }
 }
