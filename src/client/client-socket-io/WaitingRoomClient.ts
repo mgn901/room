@@ -3,7 +3,7 @@ import {
   type IWaitingPlayerWithAuthenticationTokenDto,
   type IWaitingRoomWithSecretDto,
 } from '../../server/controller/dto.ts';
-import { ClientBase } from './ClientBase.ts';
+import { ClientBase, ISnapshot } from './ClientBase.ts';
 
 export class WaitingRoomClient extends ClientBase {
   private _waitingRoom: IWaitingRoomWithSecretDto | undefined;
@@ -20,6 +20,12 @@ export class WaitingRoomClient extends ClientBase {
     super(param);
     this.socket.on('s:waitingRoom:changed', (param) => {
       this._waitingRoom = { ...param.waitingRoom, secret: this.waitingRoom?.secret! };
+      this.dispatchEvent(new Event('update'));
+    });
+    this.socket.on('s:waitingRoom:deleted', (param) => {
+      this._waitingRoom = undefined;
+      this._me = undefined;
+      this.dispatchEvent(new Event('update'));
     });
   }
 
@@ -35,6 +41,21 @@ export class WaitingRoomClient extends ClientBase {
 
     this.socket.once('s:waitingRoom:create:error', (param) => {
       this.handleError('s:waitingRoom:create:ok', param);
+    });
+  }
+
+  public delete(param: IClientToServerEventParams['c:waitingRoom:delete']) {
+    this.socket.emit('c:waitingRoom:delete', param);
+    this.startProcess();
+
+    this.socket.once('s:waitingRoom:delete:ok', (param) => {
+      this._waitingRoom = undefined;
+      this._me = undefined;
+      this.finishProcess('s:waitingRoom:delete:error');
+    });
+
+    this.socket.once('s:waitingRoom:delete:error', (param) => {
+      this.handleError('s:waitingRoom:delete:ok', param);
     });
   }
 
@@ -80,5 +101,24 @@ export class WaitingRoomClient extends ClientBase {
     this.socket.once('s:waitingRoom:players:leave:error', (param) => {
       this.handleError('s:waitingRoom:players:leave:ok', param);
     });
+  }
+
+  protected isChanged(snapshot: ISnapshot<this>): boolean {
+    return snapshot.me !== this._me || snapshot.waitingRoom !== this._waitingRoom;
+  }
+
+  protected createSnapshot(): ISnapshot<this> {
+    return {
+      ...this,
+      create: this.create.bind(this),
+      delete: this.delete.bind(this),
+      error: this._error,
+      isProcessing: this._isProcessing,
+      join: this.join.bind(this),
+      kickPlayer: this.kickPlayer.bind(this),
+      leave: this.leave.bind(this),
+      me: this._me,
+      waitingRoom: this._waitingRoom,
+    };
   }
 }

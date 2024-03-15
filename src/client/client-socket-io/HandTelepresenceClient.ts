@@ -3,7 +3,7 @@ import {
   type IHandTelepresenceDto,
   type IHandTelepresenceWithAuthenticationTokenDto,
 } from '../../server/controller/dto.ts';
-import { ClientBase } from './ClientBase.ts';
+import { ClientBase, ISnapshot } from './ClientBase.ts';
 
 export class HandTelepresenceClient extends ClientBase {
   private _myHandTelepresence: IHandTelepresenceWithAuthenticationTokenDto | undefined;
@@ -20,9 +20,11 @@ export class HandTelepresenceClient extends ClientBase {
     super(param);
     this.socket.on('s:handTelepresence:ready', (param) => {
       this._myHandTelepresence = param.handTelepresence;
+      this.dispatchEvent(new Event('update'));
     });
     this.socket.on('s:handTelepresence:changed', (param) => {
       this._handTelepresences.set(param.handTelepresence.id, param.handTelepresence);
+      this.dispatchEvent(new Event('update'));
     });
   }
 
@@ -110,5 +112,29 @@ export class HandTelepresenceClient extends ClientBase {
     this.socket.once('s:handTelepresence:cards:pick:error', (param) => {
       this.handleError('s:handTelepresence:cards:pick:ok', param);
     });
+  }
+
+  protected isChanged(snapshot: ISnapshot<this>): boolean {
+    return (
+      snapshot.myHandTelepresence !== this._myHandTelepresence ||
+      [...snapshot.handTelepresences.values()].some(
+        (handTelepresence) => handTelepresence !== this._handTelepresences.get(handTelepresence.id),
+      )
+    );
+  }
+
+  protected createSnapshot(): ISnapshot<this> {
+    return {
+      ...this,
+      create: this.create.bind(this),
+      error: this._error,
+      handTelepresences: this._handTelepresences,
+      holdCard: this.holdCard.bind(this),
+      isProcessing: this._isProcessing,
+      lookCard: this.lookCard.bind(this),
+      myHandTelepresence: this._myHandTelepresence,
+      pickCard: this.pickCard.bind(this),
+      scrubCard: this.scrubCard.bind(this),
+    };
   }
 }
