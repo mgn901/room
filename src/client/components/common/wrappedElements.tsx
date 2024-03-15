@@ -14,7 +14,7 @@ type TEventHandlerWithKey<
   T = A extends HTMLAttributes<infer U> ? U : never,
 > =
   | ((
-      keys: TPrimitive[],
+      keys: readonly TPrimitive[],
       ...args: NonNullable<A>[K] extends infer U
         ? U extends (...args: never) => unknown
           ? Parameters<U>
@@ -40,7 +40,7 @@ const generatePropsForUnderlyingElement = <
   T = A extends HTMLAttributes<infer U> ? U : never,
 >(
   props: TWrappedElementAttributesOf<A> & {
-    keys: TPrimitive[];
+    readonly keys: readonly TPrimitive[];
   },
 ) =>
   Object.fromEntries(
@@ -48,7 +48,10 @@ const generatePropsForUnderlyingElement = <
       key,
       typeof value === 'function'
         ? (...args: unknown[]) => {
-            (value as (keys: TPrimitive[], ...args: unknown[]) => unknown)(props.keys, ...args);
+            (value as (keys: readonly TPrimitive[], ...args: unknown[]) => unknown)(
+              props.keys,
+              ...args,
+            );
           }
         : value,
     ]),
@@ -56,7 +59,7 @@ const generatePropsForUnderlyingElement = <
 
 export const Button: FC<
   TWrappedElementAttributesOf<ButtonHTMLAttributes<HTMLButtonElement>> & {
-    keys: TPrimitive[];
+    readonly keys: readonly TPrimitive[];
   }
 > = (props) => {
   const newProps = generatePropsForUnderlyingElement(props);

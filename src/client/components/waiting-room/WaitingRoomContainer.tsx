@@ -29,7 +29,7 @@ export const WaitingRoomContainer: FC = () => {
     return <LeaveRoomWidget />;
   }
 
-  const handleClickKickButton = (keys: TPrimitive[]) => {
+  const handleClickKickButton = (keys: readonly TPrimitive[]) => {
     if (typeof keys[0] !== 'string' || !isId(keys[0])) {
       return;
     }
