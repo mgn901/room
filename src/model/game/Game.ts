@@ -72,53 +72,108 @@ export class Game {
         players: createPlayersResult.value.players,
         winners: [],
         playerIdProceeding: createPlayersResult.value.players[0].id,
-        playerIdProceeded: createPlayersResult.value.players[1].id,
+        playerIdProceeded:
+          createPlayersResult.value.players[createPlayersResult.value.players.length - 1].id,
         table: Table.create({ id: param.waitingRoom.id }).value.table,
       }),
     });
   }
 
-  public toWinnerAdded(param: {
-    player: Player;
-    context: GamePlayerContext;
-  }): TResult<{ game: Game }, IllegalParamException> {
-    if (param.context.gameId !== this.id) {
-      throw new IllegalContextException();
-    }
-
-    if (param.player.cardsInHand.length !== 0) {
-      return new Failure(new IllegalParamException('手札が残った状態で上がることはできません。'));
-    }
-
-    if (this.winners.includes(param.player.id)) {
-      return new Success({ game: this });
-    }
-
-    return new Success({
-      game: new Game({ ...this, winners: [...this.winners, param.player.id] }),
-    });
-  }
-
   public toTurnChanged(param: {
     context: PlayerContext;
+    playerProceeding: Player;
+    playerProceeded: Player;
   }): TResult<
     {
       game: Game;
     },
     IllegalTurnChangeExeption
   > {
-    if (param.context.playerId !== this.playerIdProceeding) {
+    if (
+      param.context.playerId !== this.playerIdProceeding ||
+      param.context.playerId !== param.playerProceeding.id
+    ) {
       return new Failure(
-        new IllegalTurnChangeExeption('他のプレイヤーが行動の終了を宣言することはできません。'),
+        new IllegalTurnChangeExeption(
+          '他のプレイヤーがアクションの終了を宣言することはできません。',
+        ),
       );
+    }
+
+    const playerIndexProceeding = this.players.findIndex(
+      (player) => player.id === this.playerIdProceeding,
+    );
+    const playerIndexProceeded = this.players.findIndex(
+      (player) => player.id === this.playerIdProceeded,
+    );
+
+    // 取られて上がり・取って上がりが両方いる場合
+    if (
+      param.playerProceeding.cardsInHand.length === 0 &&
+      param.playerProceeded.cardsInHand.length === 0
+    ) {
+      const newWinners = [...this.winners, param.playerProceeded.id, param.playerProceeding.id];
+      const newPlayers = this.players.filter((player) => !newWinners.includes(player.id));
+      return new Success({
+        game: new Game({
+          ...this,
+          players: newPlayers.length <= 1 ? [] : newPlayers,
+          winners: newPlayers.length <= 1 ? [...newWinners, ...newPlayers] : newWinners,
+          // 取られて上がった人の前の人
+          playerIdProceeded:
+            this.players[
+              playerIndexProceeded === 0 ? this.players.length - 1 : playerIndexProceeded - 1
+            ].id,
+          // 次の人
+          playerIdProceeding: this.players[(playerIndexProceeding + 1) % this.players.length].id,
+        }),
+      });
+    }
+
+    // 取って上がった場合
+    if (param.playerProceeding.cardsInHand.length === 0) {
+      const newWinners = [...this.winners, param.playerProceeding.id];
+      const newPlayers = this.players.filter((player) => !newWinners.includes(player.id));
+      return new Success({
+        game: new Game({
+          ...this,
+          players: newPlayers.length <= 1 ? [] : newPlayers,
+          winners: newPlayers.length <= 1 ? [...newWinners, ...newPlayers] : newWinners,
+          // 取って上がった人の前の人
+          playerIdProceeded:
+            this.players[
+              playerIndexProceeding === 0 ? this.players.length - 1 : playerIndexProceeding - 1
+            ].id,
+          // 次の人
+          playerIdProceeding: this.players[(playerIndexProceeding + 1) % this.players.length].id,
+        }),
+      });
+    }
+
+    // 取られて上がった場合
+    if (param.playerProceeded.cardsInHand.length === 0) {
+      const newWinners = [...this.winners, param.playerProceeded.id];
+      const newPlayers = this.players.filter((player) => !newWinners.includes(player.id));
+      return new Success({
+        game: new Game({
+          ...this,
+          players: newPlayers.length <= 1 ? [] : newPlayers,
+          winners: newPlayers.length <= 1 ? [...newWinners, ...newPlayers] : newWinners,
+          // 次の人
+          playerIdProceeded: this.players[(playerIndexProceeded + 1) % this.players.length].id,
+          // 次の人
+          playerIdProceeding: this.players[(playerIndexProceeding + 1) % this.players.length].id,
+        }),
+      });
     }
 
     return new Success({
       game: new Game({
         ...this,
-        playerIdProceeding: this.playerIdProceeded,
-        playerIdProceeded: this.players.find((player) => player.id === this.playerIdProceeded)
-          ?.playerIdOnNext,
+        // 次の人
+        playerIdProceeded: this.players[(playerIndexProceeded + 1) % this.players.length].id,
+        // 次の人
+        playerIdProceeding: this.players[(playerIndexProceeding + 1) % this.players.length].id,
       }),
     });
   }

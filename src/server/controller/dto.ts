@@ -88,8 +88,6 @@ export const toWaitingPlayerWithAuthenticationTokenDto = (
 export const toPlayerDto = (player: Player): IPlayerDto => ({
   id: player.id,
   cardsInHand: player.cardsInHand.map(toCardDto),
-  playerIdOnNext: player.playerIdOnNext,
-  playerIdOnPrev: player.playerIdOnPrev,
 });
 
 export const toPlayerWithAuthenticationTokenDto = (

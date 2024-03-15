@@ -44,20 +44,6 @@ export class GameClient extends ClientBase {
     });
   }
 
-  public win(param: IClientToServerEventParams['c:game:win']) {
-    this.socket.emit('c:game:win', param);
-    this.startProcess();
-
-    this.socket.once('s:game:win:ok', (param) => {
-      this._game = param.game;
-      this.finishProcess('s:game:win:error');
-    });
-
-    this.socket.once('s:game:win:error', (param) => {
-      this.handleError('s:game:win:ok', param);
-    });
-  }
-
   protected isChanged(snapshot: ISnapshot<this>): boolean {
     return snapshot.game !== this._game;
   }
@@ -70,7 +56,6 @@ export class GameClient extends ClientBase {
       error: this._error,
       game: this._game,
       isProcessing: this._isProcessing,
-      win: this.win.bind(this),
     };
   }
 }

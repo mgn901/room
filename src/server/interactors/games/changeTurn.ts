@@ -13,6 +13,7 @@ import { type RepositoryError } from '../../repositories/RepositoryError.ts';
 export const changeTurn = (param: {
   readonly gameId: Game['id'];
   readonly playerId: Player['id'];
+  readonly playerProceededId: Player['id'];
   readonly authenticationToken: TLongSecret;
   readonly implementationContainer: IImplementationContainer;
 }): TResult<
@@ -37,6 +38,15 @@ export const changeTurn = (param: {
   if (findPlayerResult.value === undefined) {
     return new Failure(new NotFoundException('指定されたIDのプレイヤーは見つかりません。'));
   }
+  const findPlayerProceededResult = param.implementationContainer.playerRepository.findById(
+    param.playerProceededId,
+  );
+  if (findPlayerProceededResult instanceof Failure) {
+    return findPlayerProceededResult;
+  }
+  if (findPlayerProceededResult.value === undefined) {
+    return new Failure(new NotFoundException('指定されたIDのプレイヤーは見つかりません。'));
+  }
 
   const createContextResult = PlayerContext.create({
     target: findPlayerResult.value,
@@ -48,6 +58,8 @@ export const changeTurn = (param: {
 
   const changeTurnResult = findGameResult.value.toTurnChanged({
     context: createContextResult.value.context,
+    playerProceeding: findPlayerResult.value,
+    playerProceeded: findPlayerProceededResult.value,
   });
   if (changeTurnResult instanceof Failure) {
     return changeTurnResult;

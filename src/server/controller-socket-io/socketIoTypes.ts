@@ -18,7 +18,6 @@ import { deleteWaitingRoom } from '../interactors/games/deleteWaitingRoom.ts';
 import { type joinWaitingRoom } from '../interactors/games/joinWaitingRoom.ts';
 import { type kickPlayer } from '../interactors/games/kickPlayer.ts';
 import { type leaveWaitingRoom } from '../interactors/games/leaveWaitingRoom.ts';
-import { type win } from '../interactors/games/win.ts';
 import { type discardPairs } from '../interactors/players/discardPairs.ts';
 import { type proceedAction } from '../interactors/players/proceedAction.ts';
 import { type createHandTelepresence } from '../interactors/shared-hands/createHandTelepresence.ts';
@@ -35,7 +34,6 @@ export interface IClientToServerEventParams {
   'c:waitingRoom:players:leave': TInputOf<typeof leaveWaitingRoom>;
   'c:game:create': TInputOf<typeof createGame>;
   'c:game:changeTurn': TInputOf<typeof changeTurn>;
-  'c:game:win': TInputOf<typeof win>;
   'c:handTelepresence:create': TInputOf<typeof createHandTelepresence>;
   'c:handTelepresence:cards:hold': TInputOf<typeof holdCard>;
   'c:handTelepresence:cards:look': TInputOf<typeof lookCard>;
@@ -71,7 +69,6 @@ export interface IServerToClientEventParams {
   's:waitingRoom:players:leave:ok': TDtoOf<TSuccessOutputOf<typeof leaveWaitingRoom>>;
   's:game:create:ok': TDtoOf<TSuccessOutputOf<typeof createGame>>;
   's:game:changeTurn:ok': TDtoOf<TSuccessOutputOf<typeof changeTurn>>;
-  's:game:win:ok': TDtoOf<TSuccessOutputOf<typeof win>>;
   's:handTelepresence:create:ok': { handTelepresence: IHandTelepresenceWithAuthenticationTokenDto };
   's:handTelepresence:cards:hold:ok': TDtoOf<TSuccessOutputOf<typeof holdCard>>;
   's:handTelepresence:cards:look:ok': TDtoOf<TSuccessOutputOf<typeof lookCard>>;
@@ -86,7 +83,6 @@ export interface IServerToClientEventParams {
   's:waitingRoom:players:leave:error': IDtoOfErrorOrException;
   's:game:create:error': IDtoOfErrorOrException;
   's:game:changeTurn:error': IDtoOfErrorOrException;
-  's:game:win:error': IDtoOfErrorOrException;
   's:handTelepresence:create:error': IDtoOfErrorOrException;
   's:handTelepresence:cards:hold:error': IDtoOfErrorOrException;
   's:handTelepresence:cards:look:error': IDtoOfErrorOrException;

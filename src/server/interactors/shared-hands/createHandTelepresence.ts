@@ -1,4 +1,5 @@
 import { type IllegalParamException } from '../../../model/errors/IllegalParamException.ts';
+import { type Game } from '../../../model/game/Game.ts';
 import { CardState } from '../../../model/hand-telepresence/CardState.ts';
 import { HandTelepresence } from '../../../model/hand-telepresence/HandTelepresence.ts';
 import { type Player } from '../../../model/player/Player.ts';
@@ -9,6 +10,7 @@ import { type IImplementationContainer } from '../../implementation-containers/I
 import { type RepositoryError } from '../../repositories/RepositoryError.ts';
 
 export const createHandTelepresence = (param: {
+  readonly gameId: Game['id'];
   readonly playerId: Player['id'];
   readonly cards: Pick<TParameterize<CardState>, 'card' | 'x' | 'y'>[];
   readonly implementationContainer: IImplementationContainer;
@@ -16,6 +18,14 @@ export const createHandTelepresence = (param: {
   { handTelepresence: HandTelepresence; playerIdOnPrev: Player['id'] },
   IllegalParamException | NotFoundException | RepositoryError
 > => {
+  const findGameResult = param.implementationContainer.gameRepository.findById(param.gameId);
+  if (findGameResult instanceof Failure) {
+    return findGameResult;
+  }
+  if (findGameResult.value === undefined) {
+    return new Failure(new NotFoundException('指定されたIDの競技は見つかりません。'));
+  }
+
   const findPlayerResult = param.implementationContainer.playerRepository.findById(param.playerId);
   if (findPlayerResult instanceof Failure) {
     return findPlayerResult;
@@ -41,6 +51,6 @@ export const createHandTelepresence = (param: {
 
   return new Success({
     handTelepresence: createHandTelepresenceResult.value.sharedHand,
-    playerIdOnPrev: findPlayerResult.value.playerIdOnPrev,
+    playerIdOnPrev: findGameResult.value.playerIdProceeding,
   });
 };

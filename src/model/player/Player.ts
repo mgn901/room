@@ -9,6 +9,7 @@ import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from '../constants.ts';
 import { ApplicationErrorOrException } from '../errors/ApplicationErrorOrException.ts';
 import { IllegalContextException } from '../errors/IllegalContextException.ts';
 import { IllegalParamException } from '../errors/IllegalParamException.ts';
+import { type Game } from '../game/Game.ts';
 import { type IWaitingPlayer } from '../game/IWaitingPlayer.ts';
 import { type ICard, compareCard } from '../values/ICard.ts';
 import { type PlayerContext } from './PlayerContext.ts';
@@ -28,18 +29,6 @@ export class Player {
   /** 手札の一覧。*/
   public readonly cardsInHand: Readonly<ICard[]>;
 
-  /**
-   * 自分の次にアクションをするプレイヤー。
-   * つまり、そのプレイヤーが自分の手札を抜き取る。
-   */
-  public readonly playerIdOnNext: Player['id'];
-
-  /**
-   * 自分の前にアクションをするプレイヤー。
-   * つまり、自分がそのプレイヤーの手札を抜き取る。
-   */
-  public readonly playerIdOnPrev: Player['id'];
-
   //#region コンストラクタ他
   private constructor(
     param: TParameterize<Player> & {
@@ -49,8 +38,6 @@ export class Player {
     this.id = param.id;
     this.authenticationToken = param.authenticationToken;
     this.cardsInHand = param.cardsInHand;
-    this.playerIdOnNext = param.playerIdOnNext;
-    this.playerIdOnPrev = param.playerIdOnPrev;
   }
 
   public static fromDto(
@@ -64,7 +51,7 @@ export class Player {
 
   /**
    * 1回の競技に参加する複数のプレイヤーのオブジェクトを作成する。
-   * シャッフルされた山札を分け、プレイヤーが行動する順番を決定する。
+   * シャッフルされた山札を分ける。
    */
   public static createManyForOneGame(param: {
     /** 作成元となる待合室のプレイヤーのオブジェクトの一覧。 */
@@ -101,24 +88,16 @@ export class Player {
             Math.floor(initialStockLength / param.waitingPlayers.length) +
               (initialStockLength % param.waitingPlayers.length > idx ? 1 : 0),
           ),
-          // 最初に行動するプレイヤーの前のプレイヤーは、最後に行動するプレイヤー。
-          playerIdOnPrev:
-            idx === 0
-              ? param.waitingPlayers[param.waitingPlayers.length - 1].id
-              : param.waitingPlayers[idx - 1].id,
-          // 最後に行動するプレイヤーの後ろのプレイヤーは、最初に行動するプレイヤー。
-          playerIdOnNext:
-            idx === param.waitingPlayers.length - 1
-              ? param.waitingPlayers[0].id
-              : param.waitingPlayers[idx + 1].id,
         }),
     );
 
     return new Success({ players });
   }
 
-  /** 行動（隣のプレイヤーの手札を抜き取る）の後の自分および相手のプレイヤーのオブジェクトを取得する。 */
+  /** アクション（隣のプレイヤーの手札を抜き取る）の後の自分および相手のプレイヤーのオブジェクトを取得する。 */
   public toActionProceeded(param: {
+    /** 参加している競技のオブジェクト。 */
+    readonly game: Game;
     /** 隣のプレイヤーのオブジェクト。 */
     readonly playerOnNext: Player;
     /** 抜き取る相手の手札の番号。 */
@@ -138,7 +117,7 @@ export class Player {
       throw new IllegalContextException();
     }
 
-    if (param.playerOnNext.id !== this.playerIdOnNext) {
+    if (param.playerOnNext.id !== param.game.playerIdProceeded) {
       return new Failure(
         new IllegalActException('左隣のプレイヤー以外の手札を抜き取ることはできません。'),
       );

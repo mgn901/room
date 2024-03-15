@@ -16,7 +16,6 @@ import { deleteWaitingRoom } from '../interactors/games/deleteWaitingRoom.ts';
 import { joinWaitingRoom } from '../interactors/games/joinWaitingRoom.ts';
 import { kickPlayer } from '../interactors/games/kickPlayer.ts';
 import { leaveWaitingRoom } from '../interactors/games/leaveWaitingRoom.ts';
-import { win } from '../interactors/games/win.ts';
 import { discardPairs } from '../interactors/players/discardPairs.ts';
 import { proceedAction } from '../interactors/players/proceedAction.ts';
 import { createHandTelepresence } from '../interactors/shared-hands/createHandTelepresence.ts';
@@ -145,20 +144,10 @@ export const listenSocket = (
       .in(`game:${result.value.game.id}`)
       .emit('s:game:changed', { game: toGameDto(result.value.game) });
     socket.emit('s:game:changeTurn:ok', { game: toGameDto(result.value.game) });
-  });
-
-  socket.on('c:game:win', (param) => {
-    const result = win({ ...param, implementationContainer });
-    if (result instanceof Failure) {
-      handleFailure({ socket, name: 's:game:win:error', failure: result });
-      return;
-    }
-    socket
-      .in(`game:${result.value.game.id}`)
-      .emit('s:game:changed', { game: toGameDto(result.value.game) });
-    socket.emit('s:game:win:ok', { game: toGameDto(result.value.game) });
     // 全員が上がった場合はSocket.IOのルームを削除
-    deleteSocketIORoom(socket, `game:${result.value.game.id}`);
+    if (result.value.game.players.length === 0) {
+      deleteSocketIORoom(socket, `game:${result.value.game.id}`);
+    }
   });
 
   socket.on('c:handTelepresence:create', (param) => {
